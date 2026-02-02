@@ -12,7 +12,7 @@ export const mePt = {
   employ: "Software Engineer",
   about: {
     title: "Sobre mim",
-    bio: "Sou um desenvolvedor de software generalista/especialista (Pi Shaped), com conhecimento sólido em Javascript e Programação Funcional, já minhas habilidades generalistas em backend são com Nodejs, Java e Rust. Comecei a programar em 2006 e entre 2008 e 2012 fiz minha graduação em Sistemas de Informação na Universidade do Centro do Paraná (UCP - Pitanga). Venho desde então trabalhando como desenvolvedor Front-end, Back-end ou FullStack, mas minha principal área sempre foi e será Front-end, hoje Rust e WebAssembly são meu foco para estudos futuros."
+    bio: "Sou um desenvolvedor de software generalista/especialista (Pi Shaped), com expertise principal em Arquitetura de Software e Full Stack Web Development utilizando Node.js no backend e React no frontend. Comecei a programar em 2006 e entre 2008 e 2012 concluí minha graduação em Sistemas de Informação na Universidade do Centro do Paraná. Atualmente, estou cursando Matemática, me especializando em resolução de sistemas complexos e buscando o equilíbrio entre a vida acadêmica e corporativa para alcançar novos patamares nas minhas capacidades intelectuais. Nos últimos anos, tenho trabalhado mais intensamente com C, C++ e Rust, com foco contínuo em sistemas de alta performance e WebAssembly."
   },
   contact: {
     title: "Meus Contatos",
@@ -39,6 +39,7 @@ export const mePt = {
   },
   education: {
     title: "Formação Acadêmica",
-    bachelor: "Bacharel em Sistemas de Informação pela UCP - Pitanga (Univerdade do Centro do Paraná), entre 2008 e 2012."
+    bachelor: "Bacharel em Sistemas de Informação pela UCP - Pitanga (Univerdade do Centro do Paraná), entre 2008 e 2012.",
+    current: "Cursando Bacharel em Matemática Aplicada Computacional (em andamento)."
   }
 }

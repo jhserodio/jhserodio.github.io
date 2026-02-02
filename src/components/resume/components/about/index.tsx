@@ -14,7 +14,10 @@ export const About = ({ bio = false }) => {
 
       <div className={style.eductation}>
         <h2 className='title'>{t('me.education.title')}</h2>
-        <p>{t('me.education.bachelor')}</p>
+        <ul>
+          <li>{t('me.education.bachelor')}</li>
+          <li>{t('me.education.current')}</li>
+        </ul>
       </div>
 
       <div className={style.contacts}>

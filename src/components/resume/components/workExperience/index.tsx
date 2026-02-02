@@ -38,7 +38,9 @@ export const WorkExperience = () => {
               {t(`resume.jobs.label.describe`)}
             </strong>
             <span className={style.value}>
-              {t(`resume.jobs.${job}.describe`)}
+              {t(`resume.jobs.${job}.describe`).split('\n\n').map((paragraph, index) => (
+                <p key={index}>{paragraph}</p>
+              ))}
             </span>
           </span>
         </div>

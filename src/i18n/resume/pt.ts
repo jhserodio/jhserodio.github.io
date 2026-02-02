@@ -67,6 +67,38 @@
         level: 7,
         years: 5,
       },
+      kubernetes: {
+        label: 'Kubernetes e AWS EKS',
+        level: 7,
+        years: 4,
+        sub: {
+          eks: 'AWS EKS (Elastic Kubernetes Service)',
+          helm: 'Helm Charts',
+          deployments: 'Deployments e Services',
+          ingress: 'Ingress Controllers',
+        }
+      },
+      gcp: {
+        label: 'Google Cloud Platform',
+        level: 5,
+        years: 2,
+        sub: {
+          vertexAI: 'Vertex AI (Machine Learning)',
+          bigQuery: 'BigQuery',
+        }
+      },
+      cAndCpp: {
+        label: 'C and C++ Programming Languages',
+        level: 6,
+        years: 3,
+        sub: {
+          algorithms: 'Algoritmos de Busca e Ordenação',
+          dataStructures: 'Árvores, Grafos, Hash Maps',
+          greedy: 'Algoritmos Gulosos',
+          linkedLists: 'Listas Ligadas',
+          matrices: 'Matrizes e Matrizes Esparsas',
+        }
+      },
       git: {
         label: 'git',
         level: 8,
@@ -364,6 +396,34 @@
           hHibernate: 'Hibernate',
         }
       },
+      csharp: {
+        label: 'C# and .NET',
+        level: 6,
+        years: 3,
+        sub: {
+          aspnet: 'ASP.NET Core',
+          entityFramework: 'Entity Framework',
+        }
+      },
+      kotlin: {
+        label: 'Kotlin',
+        level: 6,
+        years: 2,
+        sub: {
+          springBoot: 'Spring Boot with Kotlin',
+          coroutines: 'Kotlin Coroutines',
+        }
+      },
+      awsServices: {
+        label: 'AWS Data Services',
+        level: 7,
+        years: 3,
+        sub: {
+          glue: 'AWS Glue (ETL)',
+          sqs: 'SQS (Simple Queue Service)',
+          sns: 'SNS (Simple Notification Service)',
+        }
+      },
       postgreSQL: {
         label: 'PostgreSQL Database',
         level: 7,
@@ -405,6 +465,13 @@
       finished: 'Finalizado em: ',
       describe: 'Descrição: '
     },
+    boticario: {
+      company: 'GRUPO BOTICÁRIO',
+      employ: 'Tech Lead and Architect',
+      started: 'entre 05/2024',
+      finished: ' até hoje',
+      describe: 'Como Tech Lead and Architect no Grupo Boticário, lidero tecnicamente três produtos estratégicos que impactam diretamente o ecossistema de vendas e tomada de decisão, definindo padrões arquiteturais, mentorando equipes múltiplas e garantindo escalabilidade, performance e resiliência em todos os sistemas.\n\nNo Integra, arquitetei uma solução robusta de ingestão de dados utilizando C# e Node.js com NestJS, implementando múltiplas estratégias de coleta que incluem aplicações on-premise integradas com ERPs legacy como SAP e Wintor, APIs para coleta via webhooks e integrações com ERPs cloud-native. A arquitetura roda sobre AWS EKS, utilizando Apache Kafka para processamento de eventos em tempo real, Redis para cache distribuído, e persistência híbrida com MongoDB e PostgreSQL, enriquecendo análises e decisões corporativas.\n\nNo Pedido Sugerido, desenvolvi um sistema de sugestão de pedidos B2B e B2P construindo uma arquitetura baseada em microsserviços com Node.js no backend e React no frontend. Implementei pipelines de Big Data utilizando AWS Glue para ETL, AWS Lambda para processamento serverless, orquestrando tudo sobre AWS EKS com comunicação assíncrona via SQS e SNS. O sistema utiliza GCP Vertex AI para modelos de machine learning aplicando análises matemáticas e inferências estatísticas avançadas, com persistência em MongoDB, otimizando compras de alto capital e reduzindo significativamente o tempo de realização de pedidos enquanto se adapta à melhor estratégia de venda de cada cliente.\n\nNo Portal de Vendas, lidero a arquitetura de uma plataforma B2B e B2P híbrida, combinando microsserviços em Kotlin rodando sobre AWS EKS com funções serverless em Node.js/TypeScript via AWS Lambda. O frontend em React consome APIs REST e GraphQL, integrando diversos ERPs para processar compras de parceiros estratégicos. Implementei uma arquitetura de persistência poliglota utilizando MongoDB para dados não estruturados, PostgreSQL para transações críticas e DynamoDB para alta disponibilidade, com comunicação entre serviços via Apache Kafka, SQS e SNS, fornecendo ferramentas avançadas de acompanhamento e previsibilidade de reabastecimento.',
+    },
     vnator: {
       company: 'VNATOR',
       employ: 'Software Archtect e Founder',
@@ -415,9 +482,9 @@
     nzn: {
       company: 'NZN',
       employ: 'Tech Lead',
-      started: 'from 10/2023',
-      finished: ' pressent.',
-      describe: "Na posição de Arquiteto e Líder Tecnológico com Node.js, LoopBack, Strapi e Next.js em nossa plataforma, executando sobre um servidor Kubernetes, lidero o design estratégico e a gestão de equipes de desenvolvedores focadas em produtos editoriais. Sou responsável por criar padrões arquiteturais, projetar sistemas escaláveis e liderar a adoção de tecnologias. Meu papel envolve supervisionar a dinâmica da equipe, garantir altos padrões de desenvolvimento e implementar estratégias de automação para otimizar fluxos de trabalho. Dou prioridade à documentação de decisões arquiteturais e processos de desenvolvimento, garantindo clareza e compartilhamento de conhecimento. Além disso, avalio e integro tecnologias emergentes no ecossistema Node.js e frameworks relacionados, impulsionando a inovação. Minha dedicação está em fornecer soluções de alta qualidade e escaláveis por meio da colaboração efetiva da equipe e melhoria contínua.",
+      started: 'entre 10/2022',
+      finished: ' até 07/2023.',
+      describe: "Na posição de Arquiteto e Líder Tecnológico com Node.js, LoopBack, Strapi e Next.js em nossa plataforma, executando sobre um servidor Kubernetes, lidero o design estratégico e a gestão de equipes de desenvolvedores focadas em produtos editoriais. Sou responsável por criar padrões arquiteturais, projetar sistemas escaláveis e liderar a adoção de tecnologias. Meu papel envolve supervisionar a dinâmica da equipe, garantir altos padrões de desenvolvimento e implementar estratégias de automação para otimizar fluxos de trabalho. Dou prioridade à documentação de decisões arquiteturais e processos de desenvolvimento, garantindo clareza e compartilhamento de conhecimento. Além disso, avalio e integro tecnologias emergentes no ecossistema Node.js e frameworks relacionados, impulsionando a inovação. Minha dedicação está em fornecer soluções de alta qualidade e escaláveis por meio da colaboração efetiva da equipe e melhoria contínua."
     },
     pagarme: {
       company: 'PAGAR.ME',

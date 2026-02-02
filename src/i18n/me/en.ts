@@ -12,7 +12,7 @@ export const meEn = {
   employ: "Software Engineer",
   about: {
     title: "About me",
-    bio: "I am a software developer with a broad skill set. My proficiency extends to JavaScript and Functional Programming, and I have a strong foundation in backend development, particularly with Node.js, Java, and Rust. My journey in programming commenced in 2006, and I completed my System Integration Degree at the University of Central Paraná between 2008 and 2012. Throughout my career, I have assumed various roles in the field of development, but my core expertise remains in Front-end development. At present, I am fully committed to Rust and WebAssembly for my upcoming projects."
+    bio: "I am a software developer with a broad skill set. My core expertise lies in Software Architecture and Full Stack Web Development using Node.js for backend and React for frontend. My programming journey began in 2006, and I completed my System Integration Degree at the University of Central Paraná between 2008 and 2012. Currently, I am pursuing a Mathematics degree, specializing in solving complex systems and seeking balance between academic and corporate life to reach new levels of intellectual capability. In recent years, I have been working more intensively with C, C++, and Rust, with ongoing focus on high-performance systems and WebAssembly."
   },
   contact: {
     title: "My Contacts and profiles",
@@ -39,6 +39,7 @@ export const meEn = {
   },
   education: {
     title: "Formal Education",
-    bachelor: "I pursued a System Information Degree at UCP (University of Central Parana), situated in the city of Pitanga in the state of Parana, Brazil, from 2008 to 2012."
+    bachelor: "I pursued a System Information Degree at UCP (University of Central Parana), situated in the city of Pitanga in the state of Parana, Brazil, from 2008 to 2012.",
+    current: "Currently pursuing a Bachelor's Degree in Applied Computational Mathematics (in progress)."
   }
 }

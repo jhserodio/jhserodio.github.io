@@ -67,6 +67,38 @@
         level: 7,
         years: 5,
       },
+      kubernetes: {
+        label: 'Kubernetes and AWS EKS',
+        level: 7,
+        years: 4,
+        sub: {
+          eks: 'AWS EKS (Elastic Kubernetes Service)',
+          helm: 'Helm Charts',
+          deployments: 'Deployments and Services',
+          ingress: 'Ingress Controllers',
+        }
+      },
+      gcp: {
+        label: 'Google Cloud Platform',
+        level: 5,
+        years: 2,
+        sub: {
+          vertexAI: 'Vertex AI (Machine Learning)',
+          bigQuery: 'BigQuery',
+        }
+      },
+      cAndCpp: {
+        label: 'C and C++ Programming Languages',
+        level: 6,
+        years: 3,
+        sub: {
+          algorithms: 'Search and Sorting Algorithms',
+          dataStructures: 'Trees, Graphs, Hash Maps',
+          greedy: 'Greedy Algorithms',
+          linkedLists: 'Linked Lists',
+          matrices: 'Matrices and Sparse Matrices',
+        }
+      },
       git: {
         label: 'git',
         level: 8,
@@ -364,6 +396,34 @@
           hHibernate: 'Hibernate',
         }
       },
+      csharp: {
+        label: 'C# and .NET',
+        level: 6,
+        years: 3,
+        sub: {
+          aspnet: 'ASP.NET Core',
+          entityFramework: 'Entity Framework',
+        }
+      },
+      kotlin: {
+        label: 'Kotlin',
+        level: 6,
+        years: 2,
+        sub: {
+          springBoot: 'Spring Boot with Kotlin',
+          coroutines: 'Kotlin Coroutines',
+        }
+      },
+      awsServices: {
+        label: 'AWS Data Services',
+        level: 7,
+        years: 3,
+        sub: {
+          glue: 'AWS Glue (ETL)',
+          sqs: 'SQS (Simple Queue Service)',
+          sns: 'SNS (Simple Notification Service)',
+        }
+      },
       postgreSQL: {
         label: 'PostgreSQL Database',
         level: 7,
@@ -405,6 +465,13 @@
       finished: 'Finished in: ',
       describe: 'Description: '
     },
+    boticario: {
+      company: 'GRUPO BOTICÁRIO',
+      employ: 'Tech Lead and Architect',
+      started: 'from 05/2024',
+      finished: ' present',
+      describe: 'As Tech Lead and Architect at Grupo Boticário, I technically lead three strategic products that directly impact the sales ecosystem and decision-making, defining architectural standards, mentoring multiple teams, and ensuring scalability, performance, and resilience across all systems.\n\nIn Integra, I architected a robust data ingestion solution using C# and Node.js with NestJS, implementing multiple collection strategies including on-premise applications integrated with legacy ERPs such as SAP and Wintor, APIs for webhook-based collection, and integrations with cloud-native ERPs. The architecture runs on AWS EKS, leveraging Apache Kafka for real-time event processing, Redis for distributed caching, and hybrid persistence with MongoDB and PostgreSQL, enriching corporate analyses and decisions.\n\nIn Pedido Sugerido (Suggested Order), I developed a B2B and B2P order suggestion system building a microservices-based architecture with Node.js backend and React frontend. I implemented Big Data pipelines using AWS Glue for ETL, AWS Lambda for serverless processing, orchestrating everything on AWS EKS with asynchronous communication via SQS and SNS. The system leverages GCP Vertex AI for machine learning models applying advanced mathematical analyses and statistical inferences, with MongoDB persistence, optimizing high-capital purchases and significantly reducing order processing time while adapting to each client\'s best sales strategy.\n\nIn Portal de Vendas (Sales Portal), I lead the architecture of a hybrid B2B and B2P platform, combining Kotlin microservices running on AWS EKS with serverless functions in Node.js/TypeScript via AWS Lambda. The React frontend consumes REST and GraphQL APIs, integrating multiple ERPs to process purchases from strategic partners. I implemented a polyglot persistence architecture using MongoDB for unstructured data, PostgreSQL for critical transactions, and DynamoDB for high availability, with inter-service communication via Apache Kafka, SQS, and SNS, providing advanced tracking and restocking predictability tools.',
+    },
     vnator: {
       company: 'VNATOR',
       employ: 'Software Archtect and Founder',
@@ -415,9 +482,9 @@
     nzn: {
       company: 'NZN',
       employ: 'Tech Lead',
-      started: 'from 10/2023',
-      finished: ' pressent.',
-      describe: "In the Architect and Tech Leader position with Node.js, LoopBack, Strapi, and Next.js in our stack, running above a Kubernetes server, I spearhead the strategic design and management of developer teams focused on editorial products. I am responsible for crafting architectural patterns, designing scalable systems, and providing leadership in technology adoption. My role involves overseeing team dynamics, enforcing high development standards, and implementing automation strategies to optimize workflows. I prioritize documentation for architectural decisions and development processes, ensuring clarity and knowledge sharing. Additionally, I evaluate and integrate emerging technologies within the Node.js ecosystem and related frameworks, driving innovation. My commitment lies in delivering high-quality, scalable solutions through effective team collaboration and continuous improvement.",
+      started: 'from 10/2022',
+      finished: ' at 07/2023.',
+      describe: "In the Architect and Tech Leader position with Node.js, LoopBack, Strapi, and Next.js in our stack, running above a Kubernetes server, I spearhead the strategic design and management of developer teams focused on editorial products. I am responsible for crafting architectural patterns, designing scalable systems, and providing leadership in technology adoption. My role involves overseeing team dynamics, enforcing high development standards, and implementing automation strategies to optimize workflows. I prioritize documentation for architectural decisions and development processes, ensuring clarity and knowledge sharing. Additionally, I evaluate and integrate emerging technologies within the Node.js ecosystem and related frameworks, driving innovation. My commitment lies in delivering high-quality, scalable solutions through effective team collaboration and continuous improvement."
     },
     pagarme: {
       company: 'PAGAR.ME',
