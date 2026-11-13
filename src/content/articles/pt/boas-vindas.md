@@ -13,7 +13,7 @@ Este artigo demonstra a publicação de conteúdo técnico e introduz um problem
 
 ## 1. Um problema de otimização convexa
 
-Considere a função quadrática \(f:\mathbb{R}^2\to\mathbb{R}\),
+Considere a função quadrática $f:\mathbb{R}^2\to\mathbb{R}$,
 
 $$
 \begin{aligned}
@@ -29,7 +29,7 @@ A &= \begin{bmatrix}4&1\\1&3\end{bmatrix},
 \end{aligned}
 $$
 
-Como \(A\) é simétrica definida positiva (seus menores principais líderes são \(4>0\) e \(11>0\)), existe um único mínimo sem restrições. O gradiente é \(\nabla f(\mathbf{x})=A\mathbf{x}-\mathbf{b}\). Portanto,
+Como $A$ é simétrica definida positiva (seus menores principais líderes são $4>0$ e $11>0$), existe um único mínimo sem restrições. O gradiente é $\nabla f(\mathbf{x})=A\mathbf{x}-\mathbf{b}$. Portanto,
 
 $$
 \mathbf{x}^{*}=A^{-1}\mathbf{b}
@@ -48,7 +48,7 @@ As duas coordenadas são positivas, de modo que essa solução também minimiza 
 
 ## 2. Método iterativo
 
-Para uma aproximação \(\mathbf{x}_k\), o método do gradiente utiliza
+Para uma aproximação $\mathbf{x}_k$, o método do gradiente utiliza
 
 $$
 \begin{aligned}
@@ -57,7 +57,7 @@ $$
 \end{aligned}
 $$
 
-Sua convergência depende do passo. Para \(A\) simétrica definida positiva, escolher \(0<\alpha<2/\lambda_{\max}(A)\) garante convergência no caso quadrático sem restrições.[^passo]
+Sua convergência depende do passo. Para $A$ simétrica definida positiva, escolher $0<\alpha<2/\lambda_{\max}(A)$ garante convergência no caso quadrático sem restrições.[^passo]
 
 > [!NOTE] Estabilidade numérica
 > Operações de ponto flutuante aproximam a aritmética real. Testes devem empregar tolerâncias em vez de exigir igualdade exata de resultados numéricos.
@@ -66,7 +66,7 @@ Sua convergência depende do passo. Para \(A\) simétrica definida positiva, esc
 
 Este exemplo autoral calcula um produto matriz-vetor e um passo do gradiente, sem dependências externas.
 
-\`\`\`rust title="gradient_step.rs" {2-4}
+```rust title="gradient_step.rs" {2-4}
 fn gradient_step(x: [f64; 2], alpha: f64) -> [f64; 2] {
     let a = [[4.0, 1.0], [1.0, 3.0]];
     let b = [1.0, 2.0];
@@ -82,7 +82,7 @@ fn main() {
     assert!((next[0] - 0.1).abs() < 1e-12);
     assert!((next[1] - 0.2).abs() < 1e-12);
 }
-\`\`\`
+```
 
 | Método | Custo por iteração | Consideração principal |
 | --- | --- | --- |
@@ -98,7 +98,7 @@ $$
 \int_a^b f'(t)\,\mathrm{d}t = f(b)-f(a).
 $$
 
-Para uma série convergente, estudamos as somas parciais \(S_n=\sum_{k=1}^{n}a_k\) e seu limite,
+Para uma série convergente, estudamos as somas parciais $S_n=\sum_{k=1}^{n}a_k$ e seu limite,
 
 $$
 \lim_{n\to\infty} S_n = \sum_{k=1}^{\infty} a_k.
