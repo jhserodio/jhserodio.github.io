@@ -20,36 +20,47 @@ const ui = t(lang);
   </form>
 )}
 <script>
-  import { wasmModules, type WasmModuleName } from '../wasm/registry';
-  document.querySelectorAll<HTMLFormElement>('.app-runner').forEach((form) => {
+  import { wasmModules } from '../wasm/registry';
+
+  document.querySelectorAll('form.app-runner').forEach((element) => {
+    if (!(element instanceof HTMLFormElement)) return;
+    const form = element;
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
-      const output = form.querySelector<HTMLElement>('.result');
-      const button = form.querySelector<HTMLButtonElement>('button');
-      const textarea = form.querySelector<HTMLTextAreaElement>('textarea');
+      const output = form.querySelector('pre.result');
+      const button = form.querySelector('button');
+      const textarea = form.querySelector('textarea');
       if (!output || !button || !textarea) return;
+
       button.disabled = true;
       output.textContent = '...';
       try {
         const payload = JSON.parse(textarea.value);
         if (form.dataset.type === 'api-backed') {
-          if (!form.dataset.api) throw new Error('API não configurada');
-          const response = await fetch(form.dataset.api, {
-            method: 'POST', headers: { 'content-type': 'application/json' },
+          const url = form.dataset.api;
+          if (!url) throw new Error('API not configured');
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
             body: JSON.stringify(payload),
           });
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           output.textContent = await response.text();
         } else if (form.dataset.type === 'wasm-interactive') {
-          const name = form.dataset.module as WasmModuleName;
-          if (!name || !(name in wasmModules)) throw new Error('Módulo WASM desconhecido');
-          const module = await wasmModules[name]();
+          const moduleName = form.dataset.module;
+          if (moduleName !== 'cvrp-solver') throw new Error('Unknown WASM module');
+          const module = await wasmModules['cvrp-solver']();
           await module.default();
-          if (!module.solve) throw new Error('Módulo ainda não exporta solve(input: string)');
+          if (!module.solve) throw new Error('This module does not export solve(input: string) yet');
           output.textContent = module.solve(JSON.stringify(payload));
+        } else {
+          throw new Error('Unsupported application type');
         }
-      } catch (error) { output.textContent = String(error); }
-      finally { button.disabled = false; }
+      } catch (error) {
+        output.textContent = String(error);
+      } finally {
+        button.disabled = false;
+      }
     });
   });
 </script>
