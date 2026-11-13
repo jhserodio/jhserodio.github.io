@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import AppRunner from '../components/AppRunner.astro';
 import { entrySlug, getApps, type App } from '../lib/content';
 import { alternateLang, localePath, t } from '../i18n/utils';
 import type { Lang } from '../i18n/ui';
@@ -32,6 +31,17 @@ const alternates = counterpart ? {
         : 'This experiment is planned. An interactive demo will be available when the module is implemented.'}</p>
     ) : entry.data.type === 'external-link' ? (
       <p><a href={entry.data.externalUrl} target="_blank" rel="noopener noreferrer">{lang === 'pt' ? 'Abrir projeto externo' : 'Open external project'}</a></p>
-    ) : <AppRunner app={entry} lang={lang} />}
+    ) : (
+      <form class="app-runner" data-type={entry.data.type} data-module={entry.data.wasmModule} data-api={entry.data.apiUrl}>
+        <label class="form-field">
+          <span>{u.payload}</span>
+          <textarea name="payload" spellcheck="false">{'{}'}</textarea>
+        </label>
+        <button type="submit">{u.run}</button>
+        <h2>{u.response}</h2>
+        <pre class="result" aria-live="polite"></pre>
+      </form>
+    )}
   </article>
+  <script is:inline src="/app-runner.js"></script>
 </BaseLayout>
