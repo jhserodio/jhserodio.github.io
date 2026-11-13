@@ -1,0 +1,15 @@
+{
+  "title": "Quantitative Developer Roadmap",
+  "description": "Open-source study program for mathematical algorithms, numerical computing and quantitative development.",
+  "lang": "en",
+  "type": "external-link",
+  "status": "active",
+  "externalUrl": "https://github.com/vnator/quant-dev-roadmap",
+  "pricing": "open-source",
+  "tags": [
+    "Rust",
+    "C",
+    "Algorithms",
+    "Mathematics"
+  ]
+}

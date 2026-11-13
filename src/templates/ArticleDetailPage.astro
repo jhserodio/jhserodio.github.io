@@ -7,7 +7,7 @@ import type { Lang } from '../i18n/ui';
 interface Props { lang: Lang; entry: Article }
 const { lang, entry } = Astro.props;
 const u = t(lang);
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
 const other = alternateLang(lang);
 const counterpart = (await getPublishedArticles(other)).find(otherEntry =>
   entry.data.translationKey
@@ -25,10 +25,17 @@ const alternates = counterpart ? {
   <article class="article-body">
     <header>
       <h1>{entry.data.title}</h1>
-      <time datetime={entry.data.publishedAt.toISOString()}>{entry.data.publishedAt.toLocaleDateString(lang === 'pt' ? 'pt-BR' : 'en-US')}</time>
+      <p class="muted"><time datetime={entry.data.publishedAt.toISOString()}>{entry.data.publishedAt.toLocaleDateString(lang === 'pt' ? 'pt-BR' : 'en-US')}</time> · João Henrique Serodio</p>
       <p class="lead">{entry.data.description}</p>
       <ul class="tags" aria-label="Tags">{entry.data.tags.map(tag => <li>{tag}</li>)}</ul>
+      {entry.data.cover && <img class="article-cover" src={entry.data.cover} width="960" height="480" alt={entry.data.title} />}
     </header>
+    {headings.length > 1 && (
+      <nav class="article-toc" aria-label={lang === 'pt' ? 'Sumário' : 'Table of contents'}>
+        <h2>{lang === 'pt' ? 'Sumário' : 'Contents'}</h2>
+        <ol>{headings.filter(h => h.depth === 2).map(h => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol>
+      </nav>
+    )}
     <Content />
   </article>
 </BaseLayout>
