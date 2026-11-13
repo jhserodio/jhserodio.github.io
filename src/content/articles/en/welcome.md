@@ -13,7 +13,7 @@ This article serves two purposes: it introduces a small numerical optimization p
 
 ## 1. A convex optimization problem
 
-Consider the quadratic objective \(f:\mathbb{R}^2\to\mathbb{R}\),
+Consider the quadratic objective $f:\mathbb{R}^2\to\mathbb{R}$,
 
 $$
 \begin{aligned}
@@ -29,7 +29,7 @@ A &= \begin{bmatrix}4&1\\1&3\end{bmatrix},
 \end{aligned}
 $$
 
-Since \(A\) is symmetric positive definite (its leading principal minors are \(4>0\) and \(11>0\)), this objective has a unique unconstrained minimizer. The gradient is \(\nabla f(\mathbf{x})=A\mathbf{x}-\mathbf{b}\), hence
+Since $A$ is symmetric positive definite (its leading principal minors are $4>0$ and $11>0$), this objective has a unique unconstrained minimizer. The gradient is $\nabla f(\mathbf{x})=A\mathbf{x}-\mathbf{b}$, hence
 
 $$
 \mathbf{x}^{*}=A^{-1}\mathbf{b}
@@ -48,7 +48,7 @@ Both coordinates are positive, so this point also solves the constrained problem
 
 ## 2. Iterative approaches
 
-For an iterate \(\mathbf{x}_k\), gradient descent uses
+For an iterate $\mathbf{x}_k$, gradient descent uses
 
 $$
 \begin{aligned}
@@ -57,7 +57,7 @@ $$
 \end{aligned}
 $$
 
-This becomes an affine iteration. Its convergence depends on the step size; for a symmetric positive definite \(A\), choosing \(0<\alpha<2/\lambda_{\max}(A)\) guarantees convergence for the unconstrained quadratic.[^step]
+This becomes an affine iteration. Its convergence depends on the step size; for a symmetric positive definite $A$, choosing $0<\alpha<2/\lambda_{\max}(A)$ guarantees convergence for the unconstrained quadratic.[^step]
 
 > [!NOTE] A note on numerical stability
 > Floating-point calculations approximate real arithmetic. Tests should assert tolerances, not exact equality, when comparing computed results.
@@ -66,7 +66,7 @@ This becomes an affine iteration. Its convergence depends on the step size; for 
 
 The following original example computes a matrix-vector product and one gradient step without external dependencies.
 
-\`\`\`rust title="gradient_step.rs" {2-4}
+```rust title="gradient_step.rs" {2-4}
 fn gradient_step(x: [f64; 2], alpha: f64) -> [f64; 2] {
     let a = [[4.0, 1.0], [1.0, 3.0]];
     let b = [1.0, 2.0];
@@ -82,7 +82,7 @@ fn main() {
     assert!((next[0] - 0.1).abs() < 1e-12);
     assert!((next[1] - 0.2).abs() < 1e-12);
 }
-\`\`\`
+```
 
 A simple comparison helps distinguish numerical properties:
 
@@ -100,7 +100,7 @@ $$
 \int_a^b f'(t)\,\mathrm{d}t = f(b)-f(a).
 $$
 
-For a convergent series, one might instead study the partial sums \(S_n=\sum_{k=1}^{n}a_k\) and their limit,
+For a convergent series, one might instead study the partial sums $S_n=\sum_{k=1}^{n}a_k$ and their limit,
 
 $$
 \lim_{n\to\infty} S_n = \sum_{k=1}^{\infty} a_k.
