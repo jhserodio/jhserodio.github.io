@@ -1,0 +1,15 @@
+---
+import type { Article } from '../lib/content';
+import { entrySlug } from '../lib/content';
+import type { Lang } from '../i18n/ui';
+import { localePath } from '../i18n/utils';
+interface Props { article: Article; lang: Lang }
+const { article, lang } = Astro.props;
+const href = localePath(lang, `articles/${entrySlug(article.id)}`);
+---
+<article class="card">
+  <h3><a href={href}>{article.data.title}</a></h3>
+  <small><time datetime={article.data.publishedAt.toISOString()}>{article.data.publishedAt.toLocaleDateString(lang === 'pt' ? 'pt-BR' : 'en-US')}</time></small>
+  <p>{article.data.description}</p>
+  <ul class="tags" aria-label="Tags">{article.data.tags.map(tag => <li>{tag}</li>)}</ul>
+</article>

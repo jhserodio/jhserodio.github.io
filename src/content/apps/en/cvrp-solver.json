@@ -1,0 +1,14 @@
+{
+  "title": "CVRP Solver (WASM)",
+  "description": "Planned interactive route-optimization demo with Rust.",
+  "lang": "en",
+  "type": "wasm-interactive",
+  "status": "planned",
+  "wasmModule": "cvrp-solver",
+  "pricing": "free",
+  "tags": [
+    "Rust",
+    "WASM",
+    "optimization"
+  ]
+}

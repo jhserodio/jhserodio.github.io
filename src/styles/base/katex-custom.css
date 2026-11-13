@@ -1,0 +1,2 @@
+/* Importado depois de katex/dist/katex.min.css no layout base. */
+.katex-display { overflow-x: auto; overflow-y: hidden; padding-block: var(--space-1); }

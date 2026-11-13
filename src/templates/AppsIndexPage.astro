@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AppCard from '../components/AppCard.astro';
+import { getApps } from '../lib/content';
+import { t } from '../i18n/utils';
+import type { Lang } from '../i18n/ui';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const u = t(lang);
+const apps = await getApps(lang);
+---
+<BaseLayout lang={lang} title={u.appsTitle} description={u.appsTitle}>
+  <h1>{u.appsTitle}</h1>
+  {apps.length ? <div class="card-grid">{apps.map(app => <AppCard app={app} lang={lang} />)}</div> : <p>{u.noApps}</p>}
+</BaseLayout>

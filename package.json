@@ -1,0 +1,35 @@
+{
+  "name": "jhserodio-astro-base",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "sync:vault": "node scripts/sync-vault.mjs",
+    "build:wasm": "node scripts/build-wasm.mjs",
+    "build:site": "astro build",
+    "build": "npm run sync:vault && npm run build:wasm && npm run build:site",
+    "check": "astro check && tsc --noEmit",
+    "preview": "astro preview",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^4.0.0",
+    "@astrojs/rss": "^4.0.0",
+    "@astrojs/sitemap": "^3.2.0",
+    "astro": "^5.1.5",
+    "astro-expressive-code": "^0.44.3",
+    "gray-matter": "^4.0.3",
+    "katex": "^0.16.11",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
+    "unist-util-visit": "^5.0.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.3"
+  }
+}

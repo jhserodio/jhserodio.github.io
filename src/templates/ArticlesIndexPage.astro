@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import { getPublishedArticles } from '../lib/content';
+import { t } from '../i18n/utils';
+import type { Lang } from '../i18n/ui';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const u = t(lang);
+const articles = await getPublishedArticles(lang);
+---
+<BaseLayout lang={lang} title={u.articlesTitle} description={u.articlesTitle}>
+  <h1>{u.articlesTitle}</h1>
+  {articles.length ? <div class="card-grid">{articles.map(article => <ArticleCard article={article} lang={lang} />)}</div> : <p>{u.noArticles}</p>}
+</BaseLayout>

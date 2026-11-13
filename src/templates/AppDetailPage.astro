@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AppRunner from '../components/AppRunner.astro';
+import { entrySlug, getApps, type App } from '../lib/content';
+import { alternateLang, localePath, t } from '../i18n/utils';
+import type { Lang } from '../i18n/ui';
+interface Props { lang: Lang; entry: App }
+const { lang, entry } = Astro.props;
+const u = t(lang);
+const other = alternateLang(lang);
+const counterpart = (await getApps(other)).find(app => entrySlug(app.id) === entrySlug(entry.id));
+const switchUrl = counterpart ? localePath(other, `apps/${entrySlug(counterpart.id)}`) : localePath(other, 'apps');
+const alternates = counterpart ? {
+  [lang]: localePath(lang, `apps/${entrySlug(entry.id)}`),
+  [other]: switchUrl,
+} : { [lang]: localePath(lang, `apps/${entrySlug(entry.id)}`) };
+---
+<BaseLayout lang={lang} title={entry.data.title} description={entry.data.description} switchUrl={switchUrl} alternates={alternates}>
+  <p><a href={localePath(lang, 'apps')}>← {u.back}</a></p>
+  <h1>{entry.data.title}</h1>
+  <p class="lead">{entry.data.description}</p>
+  {entry.data.type === 'external-link' ? (
+    <p><a href={entry.data.externalUrl} target="_blank" rel="noopener noreferrer">{lang === 'pt' ? 'Abrir projeto externo' : 'Open external project'}</a></p>
+  ) : <AppRunner app={entry} lang={lang} />}
+</BaseLayout>

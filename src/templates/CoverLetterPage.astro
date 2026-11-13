@@ -1,0 +1,13 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { t } from '../i18n/utils';
+import type { Lang } from '../i18n/ui';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const u = t(lang);
+---
+<BaseLayout lang={lang} title={u.coverTitle} description={u.coverIntro}>
+  <h1>{u.coverTitle}</h1>
+  <p>{u.coverIntro}</p>
+  <slot />
+</BaseLayout>

@@ -1,0 +1,18 @@
+---
+import type { App } from '../lib/content';
+import { entrySlug } from '../lib/content';
+import { localePath } from '../i18n/utils';
+import type { Lang } from '../i18n/ui';
+interface Props { app: App; lang: Lang }
+const { app, lang } = Astro.props;
+const external = app.data.type === 'external-link';
+const href = external ? app.data.externalUrl : localePath(lang, `apps/${entrySlug(app.id)}`);
+---
+<article class="card">
+  <h3><a href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined}>{app.data.title}</a></h3>
+  <p>{app.data.description}</p>
+  <ul class="tags" aria-label="Tags">
+    <li>{app.data.type}</li><li>{app.data.pricing}</li>
+    {app.data.status === 'planned' && <li>{lang === 'pt' ? 'Em breve' : 'Coming soon'}</li>}
+  </ul>
+</article>

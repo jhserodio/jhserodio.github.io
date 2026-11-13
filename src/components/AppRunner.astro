@@ -1,0 +1,55 @@
+---
+import type { App } from '../lib/content';
+import type { Lang } from '../i18n/ui';
+import { t } from '../i18n/utils';
+interface Props { app: App; lang: Lang }
+const { app, lang } = Astro.props;
+const ui = t(lang);
+---
+{app.data.status !== 'active' ? (
+  <p class="muted">{ui.planned} — {lang === 'pt' ? 'a lógica do app será implementada em outra fase.' : 'the app logic will be implemented in a later phase.'}</p>
+) : (
+  <form class="app-runner" data-type={app.data.type} data-module={app.data.wasmModule} data-api={app.data.apiUrl}>
+    <label class="form-field">
+      <span>{ui.payload}</span>
+      <textarea name="payload" spellcheck="false">{'{}'}</textarea>
+    </label>
+    <button type="submit">{ui.run}</button>
+    <h2>{ui.response}</h2>
+    <pre class="result" aria-live="polite"></pre>
+  </form>
+)}
+<script>
+  import { wasmModules, type WasmModuleName } from '../wasm/registry';
+  document.querySelectorAll<HTMLFormElement>('.app-runner').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const output = form.querySelector<HTMLElement>('.result');
+      const button = form.querySelector<HTMLButtonElement>('button');
+      const textarea = form.querySelector<HTMLTextAreaElement>('textarea');
+      if (!output || !button || !textarea) return;
+      button.disabled = true;
+      output.textContent = '...';
+      try {
+        const payload = JSON.parse(textarea.value);
+        if (form.dataset.type === 'api-backed') {
+          if (!form.dataset.api) throw new Error('API não configurada');
+          const response = await fetch(form.dataset.api, {
+            method: 'POST', headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          output.textContent = await response.text();
+        } else if (form.dataset.type === 'wasm-interactive') {
+          const name = form.dataset.module as WasmModuleName;
+          if (!name || !(name in wasmModules)) throw new Error('Módulo WASM desconhecido');
+          const module = await wasmModules[name]();
+          await module.default();
+          if (!module.solve) throw new Error('Módulo ainda não exporta solve(input: string)');
+          output.textContent = module.solve(JSON.stringify(payload));
+        }
+      } catch (error) { output.textContent = String(error); }
+      finally { button.disabled = false; }
+    });
+  });
+</script>

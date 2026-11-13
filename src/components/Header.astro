@@ -1,0 +1,49 @@
+---
+import { localePath, t, alternateLang } from '../i18n/utils';
+import type { Lang } from '../i18n/ui';
+interface Props { lang: Lang; switchUrl: string }
+const { lang, switchUrl } = Astro.props;
+const u = t(lang);
+const nextLang = alternateLang(lang);
+const links = [
+  { label: u.nav.home, href: localePath(lang) },
+  { label: u.nav.resume, href: localePath(lang, 'resume') },
+  { label: u.nav.articles, href: localePath(lang, 'articles') },
+  { label: u.nav.apps, href: localePath(lang, 'apps') },
+  { label: u.nav.coverLetter, href: localePath(lang, 'cover-letter') },
+];
+const normalize = (value: string) => value.replace(/\/$/, '') || '/';
+---
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href={localePath(lang)}>JH / Serodio</a>
+    <div class="header-right">
+      <nav aria-label={lang === 'pt' ? 'Principal' : 'Main'}>
+        <ul class="nav-list">
+          {links.map(({ label, href }) => (
+            <li><a href={href} aria-current={normalize(Astro.url.pathname) === normalize(href) ? 'page' : undefined}>{label}</a></li>
+          ))}
+        </ul>
+      </nav>
+      <a
+        class="lang-switch"
+        href={switchUrl}
+        lang={nextLang === 'pt' ? 'pt-BR' : 'en-US'}
+        hreflang={nextLang === 'pt' ? 'pt-BR' : 'en-US'}
+        aria-label={lang === 'pt' ? 'Switch language to English (US)' : 'Mudar idioma para português (Brasil)'}
+        data-set-language={nextLang}
+      >{nextLang === 'pt' ? 'PT-BR' : 'EN-US'}</a>
+    </div>
+  </div>
+</header>
+<script>
+  // Persiste a escolha explícita do usuário entre visitas.
+  // O link funciona sem JavaScript (só deixa de persistir a preferência).
+  document.querySelectorAll<HTMLAnchorElement>('[data-set-language]').forEach((link) => {
+    link.addEventListener('click', () => {
+      const next = link.dataset.setLanguage;
+      if (next !== 'pt' && next !== 'en') return;
+      try { localStorage.setItem('jhserodio:locale', next); } catch { /* fallback para link normal */ }
+    });
+  });
+</script>

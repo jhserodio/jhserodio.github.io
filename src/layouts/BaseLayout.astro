@@ -1,0 +1,50 @@
+---
+import 'katex/dist/katex.min.css';
+import '../styles/main.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { alternateLang, localePath, t } from '../i18n/utils';
+import type { Lang } from '../i18n/ui';
+
+interface Props {
+  lang: Lang;
+  title: string;
+  description: string;
+  switchUrl?: string;
+  alternates?: Partial<Record<Lang, string>>;
+}
+const { lang, title, description, switchUrl, alternates } = Astro.props;
+const other = alternateLang(lang);
+const relative = Astro.url.pathname.replace(/^\/(?:pt|en)(?:\/|$)/, '').replace(/\/$/, '');
+const otherUrl = switchUrl ?? localePath(other, relative);
+const translated = alternates ?? { pt: localePath('pt', relative), en: localePath('en', relative) };
+const site = Astro.site ?? new URL('https://jhserodio.github.io');
+const absolute = (url: string) => new URL(url, site).toString();
+const canonical = absolute(Astro.url.pathname);
+---
+<!doctype html>
+<html lang={lang === 'pt' ? 'pt-BR' : 'en-US'}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonical} />
+    {Object.entries(translated).map(([code, url]) =>
+      url && <link rel="alternate" hreflang={code === 'pt' ? 'pt-BR' : 'en-US'} href={absolute(url)} />
+    )}
+    <link rel="alternate" type="application/rss+xml" title={t(lang).articlesTitle} href={localePath(lang, 'rss.xml')} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <title>{title} | João Henrique Serodio</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#content">{lang === 'pt' ? 'Pular para conteúdo' : 'Skip to content'}</a>
+    <Header lang={lang} switchUrl={otherUrl} />
+    <main id="content" class="container main"><slot /></main>
+    <Footer lang={lang} />
+  </body>
+</html>

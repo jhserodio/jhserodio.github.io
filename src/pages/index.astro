@@ -1,0 +1,33 @@
+---
+// O GitHub Pages é estático: a escolha inicial precisa acontecer no navegador.
+// Visitas a /pt/ ou /en/ nunca são sobrescritas pela detecção automática.
+---
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, follow" />
+    <title>João Henrique Serodio — Language / Idioma</title>
+    <script is:inline>
+      (() => {
+        const key = 'jhserodio:locale';
+        let saved;
+        try { saved = localStorage.getItem(key); } catch { /* navegação privada / bloqueada */ }
+        let detected = 'pt';
+        for (const language of navigator.languages || [navigator.language]) {
+          const primary = String(language || '').toLowerCase().split('-')[0];
+          if (primary === 'en' || primary === 'pt') { detected = primary; break; }
+        }
+        const locale = saved === 'en' || saved === 'pt' ? saved : detected;
+        window.location.replace('/' + locale + '/');
+      })();
+    </script>
+  </head>
+  <body>
+    <main>
+      <p>Selecione o idioma / Select your language:</p>
+      <p><a href="/pt/">Português (Brasil)</a> · <a href="/en/">English (US)</a></p>
+    </main>
+  </body>
+</html>

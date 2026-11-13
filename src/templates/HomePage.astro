@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import AppCard from '../components/AppCard.astro';
+import { getPublishedArticles, getApps } from '../lib/content';
+import { getResume, localePath, t } from '../i18n/utils';
+import type { Lang } from '../i18n/ui';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const u = t(lang);
+const articles = (await getPublishedArticles(lang)).slice(0, 3);
+const apps = (await getApps(lang)).slice(0, 3);
+const resume = getResume(lang);
+---
+<BaseLayout lang={lang} title={u.nav.home} description={u.hero}>
+  <h1>João Henrique Serodio</h1>
+  <p class="lead">{u.hero}</p>
+  <p>{resume.summary}</p>
+  <h2>{u.latest}</h2>
+  {articles.length ? <div class="card-grid">{articles.map(article => <ArticleCard article={article} lang={lang} />)}</div> : <p class="muted">{u.noArticles}</p>}
+  <p><a href={localePath(lang, 'articles')}>{u.viewAll}</a></p>
+  <h2>{u.appsTitle}</h2>
+  {apps.length ? <div class="card-grid">{apps.map(app => <AppCard app={app} lang={lang} />)}</div> : <p class="muted">{u.noApps}</p>}
+  <p><a href={localePath(lang, 'apps')}>{u.viewAll}</a></p>
+</BaseLayout>

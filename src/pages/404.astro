@@ -1,0 +1,11 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { localePath, t } from '../i18n/utils';
+const lang = 'pt';
+const u = t(lang);
+---
+<BaseLayout lang={lang} title={u.notFound} description={u.notFoundText} switchUrl="/en/" alternates={{ pt: '/404/' }}>
+  <h1>{u.notFound}</h1>
+  <p>{u.notFoundText}</p>
+  <p><a href={localePath(lang)}>{u.nav.home}</a></p>
+</BaseLayout>

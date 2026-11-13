@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getResume, t } from '../i18n/utils';
+import type { Lang } from '../i18n/ui';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const u = t(lang);
+const resume = getResume(lang);
+---
+<BaseLayout lang={lang} title={u.resumeTitle} description={resume.summary}>
+  <h1>{u.resumeTitle}</h1>
+  <p class="lead">{resume.summary}</p>
+  <section aria-labelledby="exp-heading">
+    <h2 id="exp-heading">{u.experiences}</h2>
+    {resume.experiences.map(exp => (
+      <article class="stack">
+        <h3>{exp.role} — {exp.company}</h3>
+        <small>{exp.period.start} – {exp.period.end ?? (lang === 'pt' ? 'Atual' : 'Present')}</small>
+        {exp.description.map(text => <p>{text}</p>)}
+        {exp.achievements.length > 0 && <ul>{exp.achievements.map(text => <li>{text}</li>)}</ul>}
+        <ul class="tags" aria-label="Technologies">{exp.technologies.map(tech => <li>{tech}</li>)}</ul>
+      </article>
+    ))}
+  </section>
+  <section aria-labelledby="projects-heading">
+    <h2 id="projects-heading">{u.projects}</h2>
+    <div class="card-grid">
+      {resume.projects.map(project => (
+        <article class="card">
+          <h3>{project.title}</h3><small>{project.category}</small><p>{project.description}</p>
+          <ul class="tags" aria-label="Technologies">{project.technologies.map(tech => <li>{tech}</li>)}</ul>
+          {project.links.github && <a href={project.links.github} target="_blank" rel="noopener noreferrer">GitHub</a>}
+          {project.links.live && <span> · <a href={project.links.live} target="_blank" rel="noopener noreferrer">Live</a></span>}
+        </article>
+      ))}
+    </div>
+  </section>
+  <section aria-labelledby="edu-heading">
+    <h2 id="edu-heading">{u.education}</h2>
+    {resume.education.map(edu => (
+      <article><h3>{edu.degree} — {edu.institution}</h3><p class="muted">{edu.period.start} – {edu.period.end ?? (lang === 'pt' ? 'Atual' : 'Present')}</p></article>
+    ))}
+  </section>
+</BaseLayout>

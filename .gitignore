@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.astro/
+.env
+.env.*
+!.env.example
+# WASM gerado pelo wasm-pack (não versionar)
+public/wasm/
+# Conteúdo sincronizado do Obsidian (não publicar pelo git sem revisão)
+src/content/articles/pt/vault/
+src/content/articles/en/vault/
+public/vault-assets/
+# ferramentas
+.DS_Store
+*.log

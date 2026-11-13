@@ -1,0 +1,7 @@
+---
+import { articlePathsFor } from '../../../lib/content';
+import Page from '../../../templates/ArticleDetailPage.astro';
+export const getStaticPaths = () => articlePathsFor('pt');
+const { entry } = Astro.props;
+---
+<Page lang="pt" entry={entry} />
