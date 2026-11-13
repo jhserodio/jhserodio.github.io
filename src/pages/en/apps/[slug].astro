@@ -3,7 +3,7 @@ import type { GetStaticPaths } from 'astro';
 import { appPathsFor, type App } from '../../../lib/content';
 import Page from '../../../templates/AppDetailPage.astro';
 
+interface Props { entry: App }
 export const getStaticPaths = (async () => appPathsFor('en')) satisfies GetStaticPaths;
-const { entry } = Astro.props as { entry: App };
 ---
-<Page lang="en" entry={entry} />
+<Page lang="en" entry={Astro.props.entry} />

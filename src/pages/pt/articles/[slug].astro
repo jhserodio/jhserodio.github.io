@@ -3,7 +3,7 @@ import type { GetStaticPaths } from 'astro';
 import { articlePathsFor, type Article } from '../../../lib/content';
 import Page from '../../../templates/ArticleDetailPage.astro';
 
+interface Props { entry: Article }
 export const getStaticPaths = (async () => articlePathsFor('pt')) satisfies GetStaticPaths;
-const { entry } = Astro.props as { entry: Article };
 ---
-<Page lang="pt" entry={entry} />
+<Page lang="pt" entry={Astro.props.entry} />
