@@ -1,13 +1,20 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCoverLetter } from '../i18n/cover-letter-data';
 import { t } from '../i18n/utils';
 import type { Lang } from '../i18n/ui';
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 const u = t(lang);
+const letter = getCoverLetter(lang);
 ---
-<BaseLayout lang={lang} title={u.coverTitle} description={u.coverIntro}>
-  <h1>{u.coverTitle}</h1>
-  <p>{u.coverIntro}</p>
-  <slot />
+<BaseLayout lang={lang} title={u.coverTitle} description={letter.introduction}>
+  <article class="letter-body">
+    <h1>{u.coverTitle}</h1>
+    <p>{letter.greeting}</p>
+    <p class="lead">{letter.introduction}</p>
+    {letter.paragraphs.map(paragraph => <p>{paragraph}</p>)}
+    <p>{letter.closing}</p>
+    <p>João Henrique Serodio</p>
+  </article>
 </BaseLayout>

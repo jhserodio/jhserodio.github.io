@@ -1,25 +1,41 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ArticleCard from '../components/ArticleCard.astro';
-import AppCard from '../components/AppCard.astro';
-import { getPublishedArticles, getApps } from '../lib/content';
 import { getResume, localePath, t } from '../i18n/utils';
 import type { Lang } from '../i18n/ui';
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 const u = t(lang);
-const articles = (await getPublishedArticles(lang)).slice(0, 3);
-const apps = (await getApps(lang)).slice(0, 3);
 const resume = getResume(lang);
+const links = [
+  { title: u.nav.resume, href: localePath(lang, 'resume'), description: lang === 'pt' ? 'Trajetória, experiências, formação e projetos.' : 'Career, experience, education, and projects.' },
+  { title: u.nav.articles, href: localePath(lang, 'articles'), description: lang === 'pt' ? 'Estudos em matemática, programação e sistemas.' : 'Notes on mathematics, programming, and systems.' },
+  { title: u.nav.apps, href: localePath(lang, 'apps'), description: lang === 'pt' ? 'Projetos open-source e experimentos interativos.' : 'Open-source projects and interactive experiments.' },
+  { title: u.nav.coverLetter, href: localePath(lang, 'cover-letter'), description: lang === 'pt' ? 'Apresentação profissional e interesses.' : 'Professional introduction and interests.' },
+];
 ---
 <BaseLayout lang={lang} title={u.nav.home} description={u.hero}>
-  <h1>João Henrique Serodio</h1>
-  <p class="lead">{u.hero}</p>
-  <p>{resume.summary}</p>
-  <h2>{u.latest}</h2>
-  {articles.length ? <div class="card-grid">{articles.map(article => <ArticleCard article={article} lang={lang} />)}</div> : <p class="muted">{u.noArticles}</p>}
-  <p><a href={localePath(lang, 'articles')}>{u.viewAll}</a></p>
-  <h2>{u.appsTitle}</h2>
-  {apps.length ? <div class="card-grid">{apps.map(app => <AppCard app={app} lang={lang} />)}</div> : <p class="muted">{u.noApps}</p>}
-  <p><a href={localePath(lang, 'apps')}>{u.viewAll}</a></p>
+  <header class="home-intro">
+    <h1>João Henrique Serodio</h1>
+    <p class="lead">{u.hero}</p>
+    <p>{resume.summary}</p>
+  </header>
+  <nav aria-label={lang === 'pt' ? 'Páginas do site' : 'Website sections'}>
+    <ul class="home-links">
+      {links.map(link => (
+        <li class="card">
+          <h2><a href={link.href}>{link.title}</a></h2>
+          <p>{link.description}</p>
+        </li>
+      ))}
+    </ul>
+  </nav>
+  <section aria-labelledby="contact-heading">
+    <h2 id="contact-heading">{lang === 'pt' ? 'Contato e perfis' : 'Contact and profiles'}</h2>
+    <ul class="profile-links">
+      <li><a href="https://github.com/jhserodio" rel="me">GitHub</a></li>
+      <li><a href="https://www.linkedin.com/in/jhserodio" rel="me">LinkedIn</a></li>
+      <li><a href="https://medium.com/@jhserodio">Medium</a></li>
+      <li><a href="mailto:joao.serodio@vnator.com">Email</a></li>
+    </ul>
+  </section>
 </BaseLayout>

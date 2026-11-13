@@ -17,9 +17,21 @@ const alternates = counterpart ? {
 ---
 <BaseLayout lang={lang} title={entry.data.title} description={entry.data.description} switchUrl={switchUrl} alternates={alternates}>
   <p><a href={localePath(lang, 'apps')}>← {u.back}</a></p>
-  <h1>{entry.data.title}</h1>
-  <p class="lead">{entry.data.description}</p>
-  {entry.data.type === 'external-link' ? (
-    <p><a href={entry.data.externalUrl} target="_blank" rel="noopener noreferrer">{lang === 'pt' ? 'Abrir projeto externo' : 'Open external project'}</a></p>
-  ) : <AppRunner app={entry} lang={lang} />}
+  <article>
+    <h1>{entry.data.title}</h1>
+    <p class="lead">{entry.data.description}</p>
+    <ul class="tags">
+      <li>{entry.data.type}</li>
+      <li>{entry.data.pricing}</li>
+      <li>{entry.data.status === 'planned' ? (lang === 'pt' ? 'Planejado' : 'Planned') : (lang === 'pt' ? 'Ativo' : 'Active')}</li>
+      {entry.data.tags.map(tag => <li>{tag}</li>)}
+    </ul>
+    {entry.data.status === 'planned' ? (
+      <p class="muted">{lang === 'pt'
+        ? 'Este experimento ainda está em planejamento. A demonstração executável estará disponível quando o módulo for implementado.'
+        : 'This experiment is planned. An interactive demo will be available when the module is implemented.'}</p>
+    ) : entry.data.type === 'external-link' ? (
+      <p><a href={entry.data.externalUrl} target="_blank" rel="noopener noreferrer">{lang === 'pt' ? 'Abrir projeto externo' : 'Open external project'}</a></p>
+    ) : <AppRunner app={entry} lang={lang} />}
+  </article>
 </BaseLayout>
