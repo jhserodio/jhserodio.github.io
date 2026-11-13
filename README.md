@@ -1,114 +1,65 @@
-# jhserodio.github.io — Astro base
+# João Henrique Serodio — Personal website (Astro)
 
-Scaffold independente para a refatoração do portfólio em **Astro 5**, sem migrar ou sobrescrever o conteúdo atual do repositório. A intenção é oferecer uma base pequena e modular, não um design final.
+Bilingual static portfolio built with **Astro 5** and published as a GitHub Pages site. This `update-resume` branch refactors the existing site while preserving the public Resume and Cover Letter content previously held on `master`.
 
-## Visão geral
+## Pages
 
-- **Páginas:** Home, Resume, Articles (lista + detalhe), Apps (lista + detalhe), Cover Letter, 404 e RSS, disponíveis em `/pt/` e `/en/` (exceto o RSS/404, que seguem suas rotas próprias).
-- **Template único:** `src/layouts/BaseLayout.astro` monta `<head>`, canonical, hreflang, header e footer. A navegação/idioma fica em `src/components/Header.astro`.
-- **Conteúdo:** Astro Content Collections (`src/content.config.ts`) tipadas por Zod. Artigos Markdown/MDX com KaTeX, expressive-code, wikilinks, callouts e imagens Obsidian; Apps em JSON.
-- **Currículo:** `src/i18n/resume/{pt,en}.json`, com `ResumeSchema` único. **Os dados são placeholders** — substitua antes de publicar.
-- **Estilo mínimo:** `src/styles/main.css` e tokens de cor/tipografia/espaço. Fantasque Sans Mono é usada se instalada no dispositivo; há fallback monospace. Não inclui arquivos de fonte.
-- **WASM futuro:** catálogo permite `wasm-interactive`, mas o crate **ainda não existe**. `scripts/build-wasm.mjs` só compila após adicionar seu `Cargo.toml`.
+| Page | Portuguese | English |
+|---|---|---|
+| Home | `/pt/` | `/en/` |
+| Resume | `/pt/resume/` | `/en/resume/` |
+| Articles | `/pt/articles/` | `/en/articles/` |
+| Article demo | `/pt/articles/boas-vindas/` | `/en/articles/welcome/` |
+| Apps | `/pt/apps/` | `/en/apps/` |
+| Cover Letter | `/pt/cover-letter/` | `/en/cover-letter/` |
 
-## Como iniciar
+The home page provides a brief introduction, links to internal pages and public contact profiles. Resume includes actual experience descriptions, technologies associated with supported roles, education, languages, skills and project links. The generic public Cover Letter keeps the original substantive paragraphs but avoids empty company and position placeholders.
 
-Requer Node.js 22+ e npm. A partir desta pasta:
+**Original career data:** `src/i18n/resume/{pt,en}.ts`, `src/i18n/me/{pt,en}.ts` and `src/i18n/cover-letter/{pt,en}.ts`. The transformation in `src/i18n/resume-data.ts` validates the output and checks translation parity. Review the original dates and statements before publishing public changes.
 
-```sh
-npm install
-npm run dev
+## Development
+
+Requires Node.js 22+ and npm. From the repo root:
+
+```bash
+npm ci
 npm test
 npm run check
 npm run build
-npm run preview
+npm run dev
 ```
 
-O workflow `.github/workflows/deploy.yml` publica no GitHub Pages. Gere e versione um `package-lock.json` após o primeiro `npm install`; depois troque o passo de instalação do workflow por `npm ci` para builds reproduzíveis. Ajuste **Settings → Pages → Build and deployment → GitHub Actions** antes de usar o workflow. `site` está configurado como `https://jhserodio.github.io`, sem `base`, porque é um repositório Pages de usuário.
+The `Verify Astro site` workflow runs on `update-resume` and on pull requests into `master`; it installs locked dependencies, runs tests and checks, builds the static site, and verifies the generated routes. The Pages deployment workflow only publishes when `master` receives updates, never from this branch.
 
-> `npm run build` executa `sync:vault`, `build:wasm`, `build:site` nessa ordem. Sem vault configurado ou sem crate WASM, as duas primeiras etapas são ignoradas com mensagem explicativa.
+The canonical domain is `https://serodio.dev`. Confirm it matches the active GitHub Pages custom-domain configuration before merging.
 
-## Idiomas: navegador + escolha manual
+## Architecture and content
 
-O conteúdo usa os códigos de rota `/pt/` e `/en/`, exibidos como **PT-BR** e **EN-US**. Na primeira visita à raiz `/`:
+- `src/layouts/BaseLayout.astro`: shared SEO, header, footer, accessibility, canonical and alternate-language URLs.
+- `src/templates/`: Home, Resume, Cover Letter, Articles and Apps templates.
+- `src/content.config.ts`: Zod-validated Astro Content Collections.
+- `src/content/articles/{pt,en}/*.md`: Markdown articles with `publish: true`, translation keys and optional cover images.
+- `src/content/apps/{pt,en}/*.json`: external projects, planned WASM demos, and future API-backed apps.
+- `src/lib/content.ts`: published content discovery and stable paths. Detail routes use `[slug].astro` and never collide with `index.astro`.
+- `public/app-runner.js`: client-side runner, loaded only for executable app detail pages.
+- `src/plugins/remark-obsidian.mjs`: a subset of Obsidian wikilinks, images and callouts.
 
-1. O navegador tenta ler uma escolha manual anterior da chave `jhserodio:locale` no `localStorage`.
-2. Sem preferência válida, procura o primeiro idioma suportado na lista de idiomas do navegador (`navigator.languages`), aceitando variantes como `pt-BR`, `pt-PT`, `en-US` e `en-GB`.
-3. Se não encontrar nenhum, usa `pt`.
-4. Redireciona para `/pt/` ou `/en/` no browser. A URL de uma rota específica acessada diretamente **não é redirecionada** por esse mecanismo.
+The article demo exercises GFM, footnotes, blockquotes, bibliography, syntax-highlighted Rust, complex inline and block KaTeX math, and an accessible SVG illustration. It is available in both languages.
 
-O seletor de idioma é um link no Header global. Ao clicar, navega para a página equivalente em outro idioma e grava a escolha, que prevalece no próximo acesso à raiz. Se JavaScript ou armazenamento estiver bloqueado, o link continua navegável; apenas a persistência deixa de funcionar. Para artigos sem tradução, o switch leva ao índice de artigos no outro idioma.
+## Obsidian import and WASM
 
-Este site é **100% estático**: `Astro.preferredLocale` não detecta `Accept-Language` por visitante em um arquivo já gerado pelo build. Por isso a detecção na rota `/` é client-side.
+To synchronize explicitly approved Obsidian notes:
 
-## Onde editar cada página
-
-| Objetivo | Arquivo |
-| --- | --- |
-| Header, navegação e troca de idioma | `src/components/Header.astro` |
-| `<head>`, SEO e layout global | `src/layouts/BaseLayout.astro` |
-| Home | `src/templates/HomePage.astro` |
-| Resume | `src/templates/ResumePage.astro` e `src/i18n/resume/*.json` |
-| Artigos | `src/templates/ArticlesIndexPage.astro` e `src/templates/ArticleDetailPage.astro` |
-| Apps | `src/templates/AppsIndexPage.astro` e `src/templates/AppDetailPage.astro` |
-| Cover Letter | `src/templates/CoverLetterPage.astro` |
-| Textos de interface PT/EN | `src/i18n/ui.ts` |
-| Cores, tipografia, espaçamento | `src/styles/tokens/*.css` |
-
-As rotas em `src/pages/{pt,en}/` são adaptadores pequenos que invocam o mesmo template com a língua correta. Novas páginas devem seguir esse padrão, sem copiar o layout base.
-
-## Conteúdo e publicação
-
-### Artigos
-
-Crie `src/content/articles/pt/meu-artigo.md` ou `src/content/articles/en/my-article.mdx` com metadados:
-
-```yaml
----
-title: Meu artigo
-description: Uma descrição curta
-lang: pt
-publishedAt: 2026-11-13
-translationKey: meu-artigo
-tags: [rust, matematica]
-publish: true
----
+```bash
+OBSIDIAN_VAULT_DIR=/path/to/vault npm run sync:vault
 ```
 
-Somente `publish: true` é listado e gera rota. Para conectar traduções com slugs diferentes, coloque o **mesmo `translationKey`** nos dois arquivos. Caso não haja `translationKey`, a comparação usa o slug. `publish` ausente vale `false`.
+Only notes with `publish: true` are considered; the pipeline generates `src/content/articles/{pt,en}/vault/` and `public/vault-assets/`. Check the generated public output before deploying. Some Obsidian syntax is intentionally unsupported.
 
-### Obsidian
+The CVRP WASM app is **planned**, not executable. The Rust crate does not exist yet. `npm run build:wasm` safely skips it until a real implementation is added. External Apps link directly to their public repositories.
 
-Informe `OBSIDIAN_VAULT_DIR` (diretório absoluto ou relativo ao projeto) e execute:
+## Language selection and compatibility
 
-```sh
-OBSIDIAN_VAULT_DIR=/caminho/para/MeuVault npm run sync:vault
-```
+The root route selects a saved explicit preference first, then a supported language from `navigator.languages`, defaulting to Portuguese. An explicit localized URL is never overridden. The language switch keeps article translations paired by `translationKey` and returns to the alternate-language article index when a translation is unavailable.
 
-O script busca `.md` com `publish: true` e campos obrigatórios `title`, `publishedAt` e `lang: pt|en`. Copia notas para `src/content/articles/{lang}/vault/` e os recursos de imagem referenciados para `public/vault-assets/`. Os diretórios gerados são ignorados pelo Git; **os artigos manuais não são apagados pelo sync**. Nomes de imagens duplicados no vault geram erro, para evitar sobrescrita. Exemplo de suportes básicos:
-
-```md
-> [!NOTE] Uma observação
-> Texto de um callout
-
-[[outra-nota|Ler esta nota]]
-![[exemplo.png]]
-
-$$
-E = mc^2
-$$
-```
-
-O plugin `src/plugins/remark-obsidian.mjs` implementa um **subconjunto intencional** da sintaxe Obsidian; não é um interpretador completo de vaults, anexos não-imagem e wikilinks ambíguos. Ajuste resolução de links e slugs ao padrão final do seu vault.
-
-### Apps
-
-Crie JSON em `src/content/apps/pt/` e `src/content/apps/en/` com `type: external-link|wasm-interactive|api-backed`. As páginas mostram as entradas com `status: planned` sem depender do backend/crate. Um `wasm-interactive` só roda de verdade após implementar o crate e expor `solve(input: string)` na interface gerada, ou adaptar `AppRunner.astro` e `src/wasm/registry.ts` às assinaturas escolhidas.
-
-## Integração com o projeto existente
-
-O repositório original atualmente tem uma estrutura Astro 5 com componentes React e páginas `/`, `/resume`, `/cover-letter`. Este scaffold é uma **nova estrutura isolada**. Para migrar de forma segura, faça backup ou trabalhe em uma branch e leve o conteúdo antigo gradualmente. Os links atuais sem prefixo mudam (`/resume/` → `/pt/resume/` ou `/en/resume/`): este scaffold já inclui rotas de compatibilidade `/resume/` e `/cover-letter/` com redirecionamento estático no cliente, preservando query string e hash. Se quiser preservar também outras URLs públicas, adicione rotas legadas equivalentes.
-
-## Estado de validação
-
-A estrutura e os scripts podem ser revisados sem dependências. A instalação `npm install` **não concluiu neste ambiente**, portanto **`astro build` e `astro check` não foram executados com sucesso aqui**. Rode ambos localmente antes do primeiro deploy.
+Legacy `/resume/` and `/cover-letter/` URLs redirect in the browser while preserving query strings and hashes.
