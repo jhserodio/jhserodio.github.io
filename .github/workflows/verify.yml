@@ -1,0 +1,41 @@
+name: Verify Astro site
+
+on:
+  push:
+    branches: [update-resume]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Unit tests
+        run: npm test
+      - name: Typecheck and Astro diagnostics
+        run: npm run check
+      - name: Build static site
+        run: npm run build
+      - name: Verify critical static routes
+        run: |
+          for route in \
+            dist/pt/index.html dist/en/index.html \
+            dist/pt/resume/index.html dist/en/resume/index.html \
+            dist/pt/cover-letter/index.html dist/en/cover-letter/index.html \
+            dist/pt/articles/index.html dist/en/articles/index.html \
+            dist/pt/articles/boas-vindas/index.html dist/en/articles/welcome/index.html \
+            dist/pt/apps/index.html dist/en/apps/index.html \
+            dist/pt/apps/cvrp-solver/index.html dist/en/apps/cvrp-solver/index.html \
+            dist/pt/rss.xml dist/en/rss.xml; do
+            test -f "$route" || { echo "Missing static route: $route"; exit 1; }
+          done

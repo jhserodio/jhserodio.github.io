@@ -7,7 +7,7 @@ import rehypeKatex from 'rehype-katex';
 import { remarkObsidian } from './src/plugins/remark-obsidian.mjs';
 
 export default defineConfig({
-  site: 'https://jhserodio.github.io',
+  site: 'https://serodio.dev',
   output: 'static',
   trailingSlash: 'always',
   i18n: {
