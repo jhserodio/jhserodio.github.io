@@ -1,7 +1,7 @@
 ---
 title: "Debugging Rust from the Terminal with GDB"
 description: "Inspecting live Rust processes, fat-pointer slices (&[i32]), and contiguous heap buffers from the terminal using Cargo and rust-gdb."
-lang: en
+lang: pt
 translationKey: debugging-rust-terminal-gdb
 publishedAt: 2026-10-09
 tags: [rust, gdb, debugging, cargo, linux, algorithms]
