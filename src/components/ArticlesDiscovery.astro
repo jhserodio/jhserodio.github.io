@@ -71,7 +71,10 @@ const facets = [...tagCounts.entries()]
       const tags: string[] = JSON.parse(node.dataset.tags ?? '[]');
       return { node, tags: new Set(tags) };
     });
-    const fromUrl = () => new Set(new URL(window.location.href).searchParams.getAll('tag').filter(tag => allowed.has(tag)));
+    const fromUrl = () => {
+      const params = new URL(window.location.href).searchParams;
+      return new Set(params.getAll('tag').filter(tag => allowed.has(tag)));
+    };
     let selected = fromUrl();
 
     function render() {
