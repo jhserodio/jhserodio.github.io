@@ -170,7 +170,7 @@ test('article covers point to imported images rather than missing SVG placeholde
  const files=__ARTICLES__;
  for(const file of files) {
    const content=readFileSync(path.join(root,'src/content/articles',file),'utf8');
-   assert.match(content,/cover:\\s*"\\/article-images\\/[^"]+"/);
+   assert.ok(content.includes('cover: "\/article-images/'), 'Expected a local article cover in '+file);
  }
 });
 `
