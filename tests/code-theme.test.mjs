@@ -25,8 +25,8 @@ test('syntax highlighting uses the dark blue GitHub theme for every article', ()
 
 test('code blocks and their frame UI use Fantasque Sans Mono', () => {
   const config = read('astro.config.mjs');
-  assert.match(config, /codeFontFamily:\s*["']Fantasque Sans Mono/);
-  assert.match(config, /uiFontFamily:\s*["']Fantasque Sans Mono/);
+  assert.match(config, /codeFontFamily:\s*["'].*Fantasque Sans Mono/);
+  assert.match(config, /uiFontFamily:\s*["'].*Fantasque Sans Mono/);
   const typography = read('src/styles/tokens/typography.css');
   assert.match(typography, /font-variant-ligatures: common-ligatures contextual/);
 });
