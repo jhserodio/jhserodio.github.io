@@ -33,7 +33,7 @@ jobs:
             dist/pt/resume/index.html dist/en/resume/index.html \
             dist/pt/cover-letter/index.html dist/en/cover-letter/index.html \
             dist/pt/articles/index.html dist/en/articles/index.html \
-            dist/pt/articles/boas-vindas/index.html dist/en/articles/welcome/index.html \
+            dist/pt/articles/matematica-com-rust-modulo-1/index.html dist/en/articles/math-with-rust-module-1/index.html \
             dist/pt/apps/index.html dist/en/apps/index.html \
             dist/pt/apps/cvrp-solver/index.html dist/en/apps/cvrp-solver/index.html \
             dist/pt/rss.xml dist/en/rss.xml; do

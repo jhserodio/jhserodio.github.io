@@ -8,22 +8,24 @@ import matter from 'gray-matter';
 const root = fileURLToPath(new URL('../', import.meta.url));
 const read = (name) => readFileSync(path.join(root, name), 'utf8');
 
-test('the two published technical articles have paired metadata and rich Markdown', () => {
-  const entries = [
-    matter(read('src/content/articles/pt/boas-vindas.md')),
-    matter(read('src/content/articles/en/welcome.md')),
-  ];
-  assert.equal(entries[0].data.lang, 'pt');
-  assert.equal(entries[1].data.lang, 'en');
-  assert.ok(entries[0].data.publish && entries[1].data.publish);
-  assert.equal(entries[0].data.translationKey, entries[1].data.translationKey);
-  assert.equal(entries[0].data.cover, '/article-diagram.svg');
-  assert.ok(existsSync(path.join(root, 'public/article-diagram.svg')));
-
-  for (const { content } of entries) {
-    for (const feature of ['$$', '$\\nabla f(', '```rust', '[^', '> [!NOTE]', '<figure>', '<figcaption>', '| --- |', '## 5.']) {
-      assert.ok(content.includes(feature), `Missing Markdown feature: ${feature}`);
-    }
+test('real translated articles include mathematics and highlighted code', () => {
+  const pt = matter(read('src/content/articles/pt/matematica-com-rust-modulo-1.md'));
+  const en = matter(read('src/content/articles/en/math-with-rust-module-1.md'));
+  assert.equal(pt.data.lang, 'pt');
+  assert.equal(en.data.lang, 'en');
+  assert.ok(pt.data.publish && en.data.publish);
+  assert.equal(pt.data.translationKey, en.data.translationKey);
+  for (const { content } of [pt, en]) {
+    assert.ok(content.includes('$$'), 'Missing mathematical display notation');
+    assert.ok(content.includes('```rust'), 'Missing Rust source code snippets');
+    assert.ok(content.includes('<figure>'), 'Missing image figures');
+  }
+  for (const removed of [
+    'src/content/articles/pt/boas-vindas.md',
+    'src/content/articles/en/welcome.md',
+    'public/article-diagram.svg',
+  ]) {
+    assert.ok(!existsSync(path.join(root, removed)), 'Obsolete sample remains: ' + removed);
   }
 });
 
