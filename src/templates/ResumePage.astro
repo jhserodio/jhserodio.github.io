@@ -2,58 +2,129 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SkillBars from '../components/SkillBars.astro';
 import { getResume, t } from '../i18n/utils';
+import { mePt } from '../i18n/me/pt';
+import { meEn } from '../i18n/me/en';
 import type { Lang } from '../i18n/ui';
+import '../styles/resume.css';
+
 interface Props { lang: Lang }
+
 const { lang } = Astro.props;
 const u = t(lang);
 const resume = getResume(lang);
+const me = lang === 'pt' ? mePt : meEn;
+const contacts = [
+  { label: me.contact.email.label, value: me.contact.email.value, href: `mailto:${me.contact.email.value}`, external: false },
+  { label: me.contact.numberPhone.label, value: me.contact.numberPhone.value, href: `tel:${me.contact.numberPhone.value.replace(/[^+\d]/g, '')}`, external: false },
+  { label: me.contact.github.label, value: me.contact.github.value, href: me.contact.github.value, external: true },
+  { label: me.contact.linkedin.label, value: me.contact.linkedin.value, href: me.contact.linkedin.value, external: true },
+  { label: me.contact.leetcode.label, value: me.contact.leetcode.value, href: me.contact.leetcode.value, external: true },
+];
 ---
 <BaseLayout lang={lang} title={u.resumeTitle} description={resume.summary}>
-  <h1>{u.resumeTitle}</h1>
-  <p class="lead">{resume.summary}</p>
-  <section aria-labelledby="exp-heading">
-    <h2 id="exp-heading">{u.experiences}</h2>
-    {resume.experiences.map(exp => (
-      <article class="stack resume-entry">
-        <h3>{exp.role} — {exp.company}</h3>
-        <p class="muted"><time>{exp.period.start}</time> – {exp.period.end ?? (lang === 'pt' ? 'Atual' : 'Present')}</p>
-        {exp.description.map(text => <p>{text}</p>)}
-        {exp.achievements.length > 0 && <ul>{exp.achievements.map(text => <li>{text}</li>)}</ul>}
-        {exp.technologies.length > 0 && <ul class="tags" aria-label={lang === 'pt' ? 'Tecnologias' : 'Technologies'}>{exp.technologies.map(tech => <li>{tech}</li>)}</ul>}
-      </article>
-    ))}
-  </section>
-  <SkillBars lang={lang} />
-  <section aria-labelledby="soft-heading">
-    <h2 id="soft-heading">{lang === 'pt' ? 'Competências interpessoais' : 'Soft skills'}</h2>
-    <ul>{resume.softSkills.map(skill => <li>{skill}</li>)}</ul>
-  </section>
-  <section aria-labelledby="langs-heading">
-    <h2 id="langs-heading">{lang === 'pt' ? 'Idiomas' : 'Languages'}</h2>
-    <ul>{resume.languages.map(item => <li><strong>{item.name}:</strong> {item.level}</li>)}</ul>
-  </section>
-  <section aria-labelledby="edu-heading">
-    <h2 id="edu-heading">{u.education}</h2>
-    {resume.education.map(edu => (
-      <article class="resume-entry">
-        <h3>{edu.degree} — {edu.institution}</h3>
-        <p class="muted">{edu.period.start} – {edu.period.end ?? (lang === 'pt' ? 'Atual' : 'Present')}</p>
-      </article>
-    ))}
-  </section>
-  <section aria-labelledby="projects-heading">
-    <h2 id="projects-heading">{u.projects}</h2>
-    <div class="card-grid">
-      {resume.projects.map(project => (
-        <article class="card">
-          <h3>{project.title}</h3>
-          <small>{project.category}</small>
-          <p>{project.description}</p>
-          <ul class="tags">{project.technologies.map(tech => <li>{tech}</li>)}</ul>
-          {project.links.github && <a href={project.links.github} target="_blank" rel="noopener noreferrer">GitHub</a>}
-          {project.links.live && <span> · <a href={project.links.live} target="_blank" rel="noopener noreferrer">Live</a></span>}
-        </article>
-      ))}
+  <article class="resume-page">
+    <section class="resume-overview" aria-labelledby="resume-title">
+      <h1 id="resume-title">{u.resumeTitle}</h1>
+      <h2 class="resume-subheading">{me.about.title}</h2>
+      <p class="lead resume-summary">{resume.summary}</p>
+    </section>
+
+    <div class="resume-intro-grid">
+      <section class="resume-intro-panel" aria-labelledby="edu-heading">
+        <h2 id="edu-heading" class="resume-panel-title">{u.education}</h2>
+        <ul class="resume-education-list">
+          {resume.education.map(edu => (
+            <li class="resume-education-item">
+              <h3>{edu.degree}</h3>
+              <p class="resume-education-institution">{edu.institution}</p>
+              <p class="muted resume-period">{edu.period.start} – {edu.period.end ?? (lang === 'pt' ? 'Atual' : 'Present')}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+      <section class="resume-intro-panel" aria-labelledby="contacts-heading">
+        <h2 id="contacts-heading" class="resume-panel-title">{me.contact.title}</h2>
+        <ul class="resume-contact-list">
+          {contacts.map(contact => (
+            <li class="resume-contact-item">
+              <span class="resume-contact-label">{contact.label}</span>
+              <a href={contact.href} target={contact.external ? '_blank' : undefined} rel={contact.external ? 'noopener noreferrer' : undefined}>
+                {contact.value}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
-  </section>
+
+    <SkillBars lang={lang} />
+
+    <section class="resume-work-section" aria-labelledby="exp-heading">
+      <h2 id="exp-heading" class="resume-section-title">{u.experiences}</h2>
+      <div class="resume-work-list">
+        {resume.experiences.map(exp => (
+          <article class="resume-work-item">
+            <header class="resume-work-header">
+              <div class="resume-work-identity">
+                <h3>{exp.company}</h3>
+                <p class="resume-work-role">{exp.role}</p>
+              </div>
+              <p class="resume-work-period">
+                <span class="visually-hidden">{lang === 'pt' ? 'Período: ' : 'Period: '}</span>
+                {exp.period.start} – {exp.period.end ?? (lang === 'pt' ? 'Atual' : 'Present')}
+              </p>
+            </header>
+            <div class="resume-work-description">
+              {exp.description.map(text => <p>{text}</p>)}
+              {exp.achievements.length > 0 && (
+                <ul class="resume-achievements">{exp.achievements.map(text => <li>{text}</li>)}</ul>
+              )}
+            </div>
+            {exp.technologies.length > 0 && (
+              <ul class="tags resume-work-technologies" aria-label={lang === 'pt' ? 'Tecnologias' : 'Technologies'}>
+                {exp.technologies.map(tech => <li>{tech}</li>)}
+              </ul>
+            )}
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <div class="resume-extra-grid">
+      <section class="resume-extra-panel" aria-labelledby="langs-heading">
+        <h2 id="langs-heading" class="resume-panel-title">{lang === 'pt' ? 'Idiomas' : 'Languages'}</h2>
+        <ul class="resume-language-list">
+          {resume.languages.map(item => (
+            <li><strong>{item.name}</strong><span>{item.level}</span></li>
+          ))}
+        </ul>
+      </section>
+      <section class="resume-extra-panel" aria-labelledby="soft-heading">
+        <h2 id="soft-heading" class="resume-panel-title">{lang === 'pt' ? 'Competências interpessoais' : 'Soft skills'}</h2>
+        <ul class="resume-soft-list">
+          {resume.softSkills.map(skill => <li>{skill}</li>)}
+        </ul>
+      </section>
+    </div>
+
+    <section class="resume-projects" aria-labelledby="projects-heading">
+      <h2 id="projects-heading" class="resume-section-title">{u.projects}</h2>
+      <div class="card-grid resume-project-grid">
+        {resume.projects.map(project => (
+          <article class="card resume-project-card">
+            <h3>{project.title}</h3>
+            <small>{project.category}</small>
+            <p>{project.description}</p>
+            <ul class="tags" aria-label={lang === 'pt' ? 'Tecnologias' : 'Technologies'}>
+              {project.technologies.map(tech => <li>{tech}</li>)}
+            </ul>
+            <div class="resume-project-links">
+              {project.links.github && <a href={project.links.github} target="_blank" rel="noopener noreferrer">GitHub</a>}
+              {project.links.live && <a href={project.links.live} target="_blank" rel="noopener noreferrer">Live</a>}
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  </article>
 </BaseLayout>
