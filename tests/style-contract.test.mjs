@@ -42,13 +42,33 @@ test('edited portrait replaces the header image without deleting the original', 
   assert.match(read('src/layouts/BaseLayout.astro'), /class="site-shell"/);
   assert.match(read('src/components/Header.astro'), /src="\/profile-portrait.webp"/);
 });
-test('background and glass panel repeat different intensity 10px grids', () => {
+test('master-like background and header reproduce the original restrained 3% and 1% grids', () => {
   const tokens = read('src/styles/tokens/colors.css');
   const css = read('src/styles/main.css');
+  assert.match(tokens, /--grid-line-soft: rgba\(255, 255, 255, \.03\)/);
+  assert.match(tokens, /--grid-line: rgba\(255, 255, 255, \.01\)/);
   assert.match(tokens, /--grid-background:/);
   assert.match(tokens, /--grid-glass:/);
-  assert.match(tokens, /--glass-surface: rgba\(16, 21, 29, \.82\)/);
   assert.match(css, /background-image: var\(--grid-background\)/);
-  assert.match(css, /background-image: var\(--grid-glass\), var\(--shine\)/);
-  assert.match(css, /backdrop-filter: blur\(6px\)/);
+  const shell = css.match(/\.site-shell\s*\{([^}]*)\}/)?.[1];
+  assert.ok(shell);
+  assert.match(shell, /background-color: var\(--glass-surface\)/);
+  assert.match(shell, /background-image: var\(--shine\)/);
+  assert.doesNotMatch(shell, /var\(--grid-glass\)/);
+  assert.match(shell, /backdrop-filter: blur\(1px\)/);
+  const banner = css.match(/\.site-banner\s*\{([^}]*)\}/)?.[1];
+  assert.match(banner ?? '', /background-image: var\(--grid-glass\)/);
+  assert.match(css, /background-size: 10px 10px/);
+});
+
+test('edited portrait is circular on desktop and mobile', () => {
+  const css = read('src/styles/main.css');
+  const photo = css.match(/\.profile-photo\s*\{([^}]*)\}/)?.[1];
+  const img = css.match(/\.profile-photo img\s*\{([^}]*)\}/)?.[1];
+  assert.match(photo ?? '', /border-radius:\s*50%/);
+  assert.match(img ?? '', /border-radius:\s*50%/);
+  assert.match(photo ?? '', /overflow:\s*hidden/);
+  assert.match(css, /\.profile-photo\s*\{ flex-basis: 7\.25rem/);
+  assert.match(read('src/components/Header.astro'), /src="\/profile-portrait\.webp"/);
+  assert.ok(existsSync(path.join(root, 'public/profile-portrait.webp')));
 });

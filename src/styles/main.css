@@ -34,32 +34,40 @@ small, .muted { color: var(--muted); }
   width: min(calc(100% - 2rem), 78rem);
   min-height: calc(100vh - 2.5rem);
   margin: 1.25rem auto;
+  /* As in master, the grid sits behind the content instead of being
+     painted strongly across the entire foreground panel. */
   background-color: var(--glass-surface);
-  background-image: var(--grid-glass), var(--shine);
-  background-size: 10px 10px, auto;
-  backdrop-filter: blur(6px) saturate(112%);
-  -webkit-backdrop-filter: blur(6px) saturate(112%);
+  background-image: var(--shine);
+  backdrop-filter: blur(1px) saturate(105%);
+  -webkit-backdrop-filter: blur(1px) saturate(105%);
   border: 1px solid var(--line-soft);
   border-radius: 1rem;
   overflow: clip;
-  box-shadow: 0 25px 65px rgba(0,0,0,.23);
+  box-shadow: 0 18px 44px rgba(0,0,0,.16);
 }
 .site-header { border-bottom: 1px solid var(--line-soft); }
 .site-banner {
   height: 7.5rem;
-  border-bottom: 1px solid var(--line);
-  background-color: rgba(46, 60, 81, .16);
+  border-bottom: 1px solid rgba(67, 89, 117, .62);
+  /* A delicate, independent 1%-opacity grid exactly like the header
+     background in master, layered over the distant 3% body grid. */
+  background-color: rgba(16, 21, 29, .06);
   background-image: var(--grid-glass);
   background-size: 10px 10px;
 }
 .site-identity { position: relative; display: flex; align-items: center; gap: 1.4rem; padding: 0 1.75rem 1.4rem; min-height: 7rem; }
 .profile-photo {
   display: block; flex: 0 0 9.5rem; width: 9.5rem; height: 9.5rem;
-  margin-top: -3.3rem; border-radius: 1rem; padding: .3rem;
-  background: rgba(16, 21, 29, .92); border: 1px solid var(--line);
-  box-shadow: 0 12px 30px rgba(0,0,0,.28);
+  margin-top: -3.3rem; padding: .3rem;
+  border-radius: 50%; overflow: hidden;
+  background: rgba(16, 21, 29, .74);
+  border: 1px solid rgba(67, 89, 117, .7);
+  box-shadow: 0 8px 22px rgba(0,0,0,.17);
 }
-.profile-photo img { display: block; width: 100%; height: 100%; aspect-ratio: 1; object-fit: cover; object-position: center center; border-radius: .72rem; }
+.profile-photo img {
+  display: block; width: 100%; height: 100%; aspect-ratio: 1;
+  object-fit: cover; object-position: center center; border-radius: 50%;
+}
 .identity-meta { padding-bottom: 0; min-width: 0; }
 .brand { display: block; color: var(--accent); text-decoration: none; font-size: clamp(1.12rem, 2.8vw, 1.6rem); font-weight: 700; line-height: 1.2; }
 .identity-role { color: var(--muted); margin: .25rem 0 0; font-size: .92rem; }
