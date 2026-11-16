@@ -13,5 +13,14 @@
   --focus: #c8e7ff;
   --grid-line: rgba(204, 224, 255, .065);
   --grid-line-soft: rgba(204, 224, 255, .025);
-  --shine: radial-gradient(ellipse 850px 420px at 50% 0%, #253650 0%, #151e2b 55%, #10151d 100%);
+  /* Recreates master's dual 10px grid: a subtle distant layer behind
+     a more visible second layer on the translucent front panel. */
+  --grid-background:
+    linear-gradient(0deg, transparent 24%, var(--grid-line-soft) 25%, var(--grid-line-soft) 26%, transparent 27%, transparent 74%, var(--grid-line-soft) 75%, var(--grid-line-soft) 76%, transparent 77%),
+    linear-gradient(90deg, transparent 24%, var(--grid-line-soft) 25%, var(--grid-line-soft) 26%, transparent 27%, transparent 74%, var(--grid-line-soft) 75%, var(--grid-line-soft) 76%, transparent 77%);
+  --grid-glass:
+    linear-gradient(0deg, transparent 24%, var(--grid-line) 25%, var(--grid-line) 26%, transparent 27%, transparent 74%, var(--grid-line) 75%, var(--grid-line) 76%, transparent 77%),
+    linear-gradient(90deg, transparent 24%, var(--grid-line) 25%, var(--grid-line) 26%, transparent 27%, transparent 74%, var(--grid-line) 75%, var(--grid-line) 76%, transparent 77%);
+  --glass-surface: rgba(16, 21, 29, .82);
+  --shine: radial-gradient(ellipse 850px 420px at 50% 0%, rgba(37, 54, 80, .84) 0%, rgba(21, 30, 43, .69) 55%, rgba(16, 21, 29, .42) 100%);
 }

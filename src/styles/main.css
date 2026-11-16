@@ -9,10 +9,8 @@ html { scroll-padding-top: 1rem; }
 body {
   min-height: 100vh;
   background-color: var(--surface);
-  background-image:
-    linear-gradient(0deg, transparent 24%, var(--grid-line-soft) 25%, var(--grid-line-soft) 26%, transparent 27%, transparent 74%, var(--grid-line-soft) 75%, var(--grid-line-soft) 76%, transparent 77%),
-    linear-gradient(90deg, transparent 24%, var(--grid-line-soft) 25%, var(--grid-line-soft) 26%, transparent 27%, transparent 74%, var(--grid-line-soft) 75%, var(--grid-line-soft) 76%, transparent 77%);
-  background-size: 12px 12px;
+  background-image: var(--grid-background);
+  background-size: 10px 10px;
   color: var(--text);
   font-family: var(--font-body);
   font-size: var(--font-size);
@@ -36,7 +34,11 @@ small, .muted { color: var(--muted); }
   width: min(calc(100% - 2rem), 78rem);
   min-height: calc(100vh - 2.5rem);
   margin: 1.25rem auto;
-  background: var(--shine);
+  background-color: var(--glass-surface);
+  background-image: var(--grid-glass), var(--shine);
+  background-size: 10px 10px, auto;
+  backdrop-filter: blur(6px) saturate(112%);
+  -webkit-backdrop-filter: blur(6px) saturate(112%);
   border: 1px solid var(--line-soft);
   border-radius: 1rem;
   overflow: clip;
@@ -44,21 +46,21 @@ small, .muted { color: var(--muted); }
 }
 .site-header { border-bottom: 1px solid var(--line-soft); }
 .site-banner {
-  height: 6.5rem;
+  height: 7.5rem;
   border-bottom: 1px solid var(--line);
-  background-image:
-    linear-gradient(0deg, transparent 24%, var(--grid-line) 25%, var(--grid-line) 26%, transparent 27%, transparent 74%, var(--grid-line) 75%, var(--grid-line) 76%, transparent 77%),
-    linear-gradient(90deg, transparent 24%, var(--grid-line) 25%, var(--grid-line) 26%, transparent 27%, transparent 74%, var(--grid-line) 75%, var(--grid-line) 76%, transparent 77%);
-  background-size: 12px 12px;
+  background-color: rgba(46, 60, 81, .16);
+  background-image: var(--grid-glass);
+  background-size: 10px 10px;
 }
-.site-identity { position: relative; display: flex; align-items: end; gap: 1.25rem; padding: 0 1.75rem 1.25rem; min-height: 4.6rem; }
+.site-identity { position: relative; display: flex; align-items: center; gap: 1.4rem; padding: 0 1.75rem 1.4rem; min-height: 7rem; }
 .profile-photo {
-  display: block; flex: 0 0 6.8rem; width: 6.8rem; height: 6.8rem;
-  margin-top: -3rem; border-radius: 50%; padding: .28rem;
-  background: var(--panel); border: 1px solid var(--line);
+  display: block; flex: 0 0 9.5rem; width: 9.5rem; height: 9.5rem;
+  margin-top: -3.3rem; border-radius: 1rem; padding: .3rem;
+  background: rgba(16, 21, 29, .92); border: 1px solid var(--line);
+  box-shadow: 0 12px 30px rgba(0,0,0,.28);
 }
-.profile-photo img { width: 100%; height: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 50%; }
-.identity-meta { padding-bottom: .2rem; min-width: 0; }
+.profile-photo img { display: block; width: 100%; height: 100%; aspect-ratio: 1; object-fit: cover; object-position: center center; border-radius: .72rem; }
+.identity-meta { padding-bottom: 0; min-width: 0; }
 .brand { display: block; color: var(--accent); text-decoration: none; font-size: clamp(1.12rem, 2.8vw, 1.6rem); font-weight: 700; line-height: 1.2; }
 .identity-role { color: var(--muted); margin: .25rem 0 0; font-size: .92rem; }
 .header-inner { display: flex; justify-content: space-between; align-items: center; gap: .85rem; padding: .8rem 0; }
@@ -142,8 +144,9 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 @media (max-width: 47rem) {
   .site-shell { width: min(calc(100% - .75rem), 78rem); margin: .375rem auto; border-radius: .65rem; }
   .container { width: min(calc(100% - 1.65rem), var(--content-width)); }
-  .site-identity { padding-inline: 1rem; gap: .8rem; }
-  .profile-photo { flex-basis: 5.4rem; width: 5.4rem; height: 5.4rem; margin-top: -2.25rem; }
+  .site-banner { height: 6rem; }
+  .site-identity { padding-inline: 1rem; gap: .85rem; min-height: 6.3rem; }
+  .profile-photo { flex-basis: 7.25rem; width: 7.25rem; height: 7.25rem; margin-top: -1.75rem; }
   .header-right { align-items: flex-start; flex-wrap: wrap; }
   .nav-list { gap: .2rem; }
   .nav-list a { padding: .36rem .45rem; font-size: .88rem; }
@@ -154,7 +157,7 @@ button:disabled { cursor: not-allowed; opacity: .55; }
 @media print {
   :root { color-scheme: light; --text: #111; --muted: #333; --accent: #163d68; --accent-soft: #163d68; --line: #888; --line-soft: #bbb; --panel: #fff; --panel-raised: #fff; }
   body { background: white; color: black; font-size: 10pt; }
-  .site-shell { width: 100%; margin: 0; box-shadow: none; border: 0; border-radius: 0; background: white; }
+  .site-shell { width: 100%; margin: 0; box-shadow: none; border: 0; border-radius: 0; background: white; backdrop-filter: none; -webkit-backdrop-filter: none; }
   .site-banner, .site-footer, .header-inner, .lang-switch { display: none; }
   .site-identity { padding: .3rem 0; min-height: 0; }
   .profile-photo { margin: 0; width: 3.3rem; height: 3.3rem; flex-basis: 3.3rem; }

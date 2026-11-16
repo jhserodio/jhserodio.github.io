@@ -14,7 +14,7 @@ test('reuses the original dark palette and the grid / radial background', () => 
     assert.ok(colors.includes(hex), 'Missing original color: ' + hex);
   }
   assert.match(css, /radial-gradient|--shine/);
-  assert.match(css, /background-size: 12px 12px/);
+  assert.match(css, /background-size: 10px 10px/);
 });
 
 test('Fantasque Sans Mono v1.8 provides four webfont faces with ligatures enabled', () => {
@@ -36,8 +36,19 @@ test('skill bars use original progress levels and accessible meters', () => {
   assert.match(bars, /resumeEn/);
 });
 
-test('original profile image is preserved locally, and site shell includes every page', () => {
+test('edited portrait replaces the header image without deleting the original', () => {
   assert.ok(existsSync(path.join(root, 'public/profile.jpg')));
+  assert.ok(existsSync(path.join(root, 'public/profile-portrait.webp')));
   assert.match(read('src/layouts/BaseLayout.astro'), /class="site-shell"/);
-  assert.match(read('src/components/Header.astro'), /src="\/profile.jpg"/);
+  assert.match(read('src/components/Header.astro'), /src="\/profile-portrait.webp"/);
+});
+test('background and glass panel repeat different intensity 10px grids', () => {
+  const tokens = read('src/styles/tokens/colors.css');
+  const css = read('src/styles/main.css');
+  assert.match(tokens, /--grid-background:/);
+  assert.match(tokens, /--grid-glass:/);
+  assert.match(tokens, /--glass-surface: rgba\(16, 21, 29, \.82\)/);
+  assert.match(css, /background-image: var\(--grid-background\)/);
+  assert.match(css, /background-image: var\(--grid-glass\), var\(--shine\)/);
+  assert.match(css, /backdrop-filter: blur\(6px\)/);
 });
