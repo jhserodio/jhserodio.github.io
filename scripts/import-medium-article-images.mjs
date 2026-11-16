@@ -158,7 +158,7 @@ for(const spec of missingArticles) {
   console.log('Restored missing published article:',spec.filename);
 }
 
-const test=String.raw\`import { existsSync, readFileSync } from 'node:fs';
+const test=String.raw`import { existsSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
@@ -175,7 +175,7 @@ test('article covers point to imported images rather than missing SVG placeholde
    assert.match(content,/cover:\\s*"\\/article-images\\/[^"]+"/);
  }
 });
-\`
+`
   .replace('__ASSETS__',JSON.stringify([...imageSources.keys()]))
   .replace('__ARTICLES__',JSON.stringify(covers.flatMap(x=>x.files)));
 await writeFile(join(root,'tests','article-images.test.mjs'),test);
