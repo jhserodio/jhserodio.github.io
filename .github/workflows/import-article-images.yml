@@ -1,0 +1,37 @@
+name: Import author-owned article artwork to update-resume
+on:
+  push:
+    branches: [update-resume]
+    paths:
+      - "scripts/import-medium-article-images.mjs"
+      - ".github/workflows/import-article-images.yml"
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: update-resume
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Download and verify all author-owned images
+        run: node scripts/import-medium-article-images.mjs
+      - name: Verify images and site
+        run: |
+          npm test
+          npm run check
+          npm run build
+      - name: Commit artwork and translated article updates directly to the existing branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/article-images src/content/articles tests/article-images.test.mjs
+          git diff --cached --quiet && { echo "No new images to commit"; exit 0; }
+          git commit -m "feat(articles): restore original images and published article illustrations"
+          git push origin HEAD:update-resume
