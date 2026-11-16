@@ -1,0 +1,54 @@
+---
+import { resumePt } from '../i18n/resume/pt';
+import { resumeEn } from '../i18n/resume/en';
+import type { Lang } from '../i18n/ui';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const source = lang === 'pt' ? resumePt : resumeEn;
+const groups = (['developer', 'frontend', 'backend'] as const).map((category) => {
+  const group = source.stack[category];
+  const skills = Object.entries(group).flatMap(([key, value]) => {
+    if (key === 'label' || value === null || typeof value !== 'object' || !('label' in value)) return [];
+    const skill = value as { label: string; level?: number; years?: number; sub?: Record<string, string> };
+    const level = typeof skill.level === 'number' && Number.isFinite(skill.level)
+      ? Math.max(0, Math.min(10, skill.level))
+      : 0;
+    const details = skill.sub ? Object.values(skill.sub) : [];
+    return [{ name: skill.label, level, years: skill.years, details }];
+  });
+  return { title: group.label, skills };
+});
+---
+<section aria-labelledby="skills-heading" class="resume-skills">
+  <h2 id="skills-heading">{lang === 'pt' ? 'Competências técnicas' : 'Technical skills'}</h2>
+  <div class="skill-grid">
+    {groups.map(group => (
+      <div class="skill-group">
+        <h3>{group.title}</h3>
+        <ul class="skill-list">
+          {group.skills.map(skill => (
+            <li class="skill-item">
+              <div class="skill-top">
+                <span class="skill-name">{skill.name}</span>
+                {typeof skill.years === 'number' && <span class="skill-years">{skill.years} {lang === 'pt' ? 'anos' : 'yrs'}</span>}
+              </div>
+              <div
+                class="skill-meter"
+                role="meter"
+                aria-label={skill.name}
+                aria-valuemin="0"
+                aria-valuemax="10"
+                aria-valuenow={skill.level}
+                aria-valuetext={lang === 'pt' ? 'Nível ' + skill.level + ' de 10' : 'Level ' + skill.level + ' out of 10'}
+              >
+                <span class="skill-meter__fill" style={'width: ' + (skill.level * 10) + '%'}></span>
+              </div>
+              {skill.details.length > 0 && <p class="skill-details">{skill.details.join(' · ')}</p>}
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </div>
+</section>

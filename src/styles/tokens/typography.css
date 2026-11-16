@@ -1,18 +1,41 @@
-/*
- * Para carregar Fantasque Sans Mono também em dispositivos sem a fonte instalada:
- * hospede seus arquivos WOFF2 em public/fonts/ e habilite o @font-face abaixo.
- * Não distribuímos arquivos de fonte no scaffold.
- *
- * @font-face {
- *   font-family: 'Fantasque Sans Mono';
- *   src: url('/fonts/FantasqueSansMono-Regular.woff2') format('woff2');
- *   font-weight: 400;
- *   font-style: normal;
- *   font-display: swap;
- * }
+/* Fantasque Sans Mono v1.8.0: includes programming ligatures (OFL-1.1).
+ * Source: https://github.com/belluzj/fantasque-sans
+ * WOFF2 delivery uses a pinned, publicly hosted mirror of the original release.
+ * Only Fantasque is selected as the site's text/code font.
  */
- :root {
-  --font-body: 'Fantasque Sans Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
-  --font-size: 1rem;
-  --line-height: 1.65;
+@font-face {
+  font-family: "Fantasque Sans Mono";
+  src: local("Fantasque Sans Mono"), url("https://cdn.jsdelivr.net/gh/tpn/fonts@1bd3f5f697c5c08b61c01a6eb0f8d3f22892bac4/fantasque-sans-mono/Webfonts/FantasqueSansMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fantasque Sans Mono";
+  src: url("https://cdn.jsdelivr.net/gh/tpn/fonts@1bd3f5f697c5c08b61c01a6eb0f8d3f22892bac4/fantasque-sans-mono/Webfonts/FantasqueSansMono-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fantasque Sans Mono";
+  src: url("https://cdn.jsdelivr.net/gh/tpn/fonts@1bd3f5f697c5c08b61c01a6eb0f8d3f22892bac4/fantasque-sans-mono/Webfonts/FantasqueSansMono-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fantasque Sans Mono";
+  src: url("https://cdn.jsdelivr.net/gh/tpn/fonts@1bd3f5f697c5c08b61c01a6eb0f8d3f22892bac4/fantasque-sans-mono/Webfonts/FantasqueSansMono-BoldItalic.woff2") format("woff2");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+:root {
+  --font-body: "Fantasque Sans Mono", monospace;
+  --font-size: 1.075rem;
+  --line-height: 1.6;
+  font-synthesis: none;
+  font-variant-ligatures: common-ligatures contextual;
+  font-feature-settings: "liga" 1, "calt" 1;
 }

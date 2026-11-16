@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import SkillBars from '../components/SkillBars.astro';
 import { getResume, t } from '../i18n/utils';
 import type { Lang } from '../i18n/ui';
 interface Props { lang: Lang }
@@ -22,15 +23,7 @@ const resume = getResume(lang);
       </article>
     ))}
   </section>
-  <section aria-labelledby="skills-heading">
-    <h2 id="skills-heading">{lang === 'pt' ? 'Competências técnicas' : 'Technical skills'}</h2>
-    {resume.skills.map(group => (
-      <div class="stack resume-skills">
-        <h3>{group.title}</h3>
-        <ul class="tags">{group.items.map(item => <li>{item}</li>)}</ul>
-      </div>
-    ))}
-  </section>
+  <SkillBars lang={lang} />
   <section aria-labelledby="soft-heading">
     <h2 id="soft-heading">{lang === 'pt' ? 'Competências interpessoais' : 'Soft skills'}</h2>
     <ul>{resume.softSkills.map(skill => <li>{skill}</li>)}</ul>

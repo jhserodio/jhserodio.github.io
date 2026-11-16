@@ -18,7 +18,7 @@ const other = alternateLang(lang);
 const relative = Astro.url.pathname.replace(/^\/(?:pt|en)(?:\/|$)/, '').replace(/\/$/, '');
 const otherUrl = switchUrl ?? localePath(other, relative);
 const translated = alternates ?? { pt: localePath('pt', relative), en: localePath('en', relative) };
-const site = Astro.site ?? new URL('https://jhserodio.github.io');
+const site = Astro.site ?? new URL('https://serodio.dev');
 const absolute = (url: string) => new URL(url, site).toString();
 const canonical = absolute(Astro.url.pathname);
 ---
@@ -43,8 +43,10 @@ const canonical = absolute(Astro.url.pathname);
   </head>
   <body>
     <a class="skip-link" href="#content">{lang === 'pt' ? 'Pular para conteúdo' : 'Skip to content'}</a>
-    <Header lang={lang} switchUrl={otherUrl} />
-    <main id="content" class="container main"><slot /></main>
-    <Footer lang={lang} />
+    <div class="site-shell">
+      <Header lang={lang} switchUrl={otherUrl} />
+      <main id="content" class="container main"><slot /></main>
+      <Footer lang={lang} />
+    </div>
   </body>
 </html>

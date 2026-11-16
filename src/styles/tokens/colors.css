@@ -1,10 +1,17 @@
- :root {
-  color-scheme: light;
-  --surface: #fafaf8;
-  --text: #232323;
-  --muted: #606060;
-  --line: #d8d8d2;
-  --accent: #274e72;
-  --focus: #1d62b5;
-  --panel: #fff;
+:root {
+  /* Palette based on the original master theme. */
+  color-scheme: dark;
+  --surface: #1d242e;
+  --panel: #10151d;
+  --panel-raised: #172232;
+  --text: #e6edf6;
+  --muted: #b0bed0;
+  --line: #435975;
+  --line-soft: #2e3c51;
+  --accent: #8fc9ff;
+  --accent-soft: #7895bb;
+  --focus: #c8e7ff;
+  --grid-line: rgba(204, 224, 255, .065);
+  --grid-line-soft: rgba(204, 224, 255, .025);
+  --shine: radial-gradient(ellipse 850px 420px at 50% 0%, #253650 0%, #151e2b 55%, #10151d 100%);
 }
