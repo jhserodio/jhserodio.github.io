@@ -12,6 +12,7 @@ tags:
     numerical-methods,
     optimization,
     algorithms,
+    math-with-rust,
   ]
 cover: "/article-images/math-with-rust-roadmap.webp"
 publish: true
@@ -29,6 +30,8 @@ I classified these algorithms into **7 distinct modules**, built tested implemen
 
 ## 1. Module 1: Algebraic Foundations and Divide and Conquer
 
+**Read the complete article:** [Module 1 — Algebraic Foundations and Divide and Conquer](/en/articles/math-with-rust-module-1/).
+
 The focus of this initial module is demonstrating how naive $\mathcal{O}(n)$ iterative loops can be reduced to $\mathcal{O}(\log n)$ or $\mathcal{O}(1)$ operations through algebraic identities and the **Divide and Conquer** paradigm.
 
 - **Fast (Binary) Exponentiation:** Exploits the identity $x^n = \left(x^{n/2}\right)^2$ for even $n$, turning linear multiplication into $\mathcal{O}(\log n)$ bit-guided steps. Heavily utilized in public-key cryptography and matrix recurrences.
@@ -44,6 +47,8 @@ which replace $\mathcal{O}(n)$ accumulation loops with exact $\mathcal{O}(1)$ ev
 - **Logarithms ($\log_b(x)$ and $\ln(x)$):** Essential for data normalization, continuous growth modeling, and bounding tree depths in data structures.
 
 ## 2. Module 2: Array Optimization and Linear State
+
+**Read the complete article:** [Module 2 — Array Optimization and Linear State](/en/articles/math-with-rust-module-2/).
 
 This module bridges scalar algebra and **Dynamic Programming**, focusing on contiguous memory scans that maintain optimal running state in strictly linear time.
 

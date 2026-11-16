@@ -12,6 +12,7 @@ tags:
     numerical-methods,
     optimization,
     algorithms,
+    math-with-rust,
   ]
 cover: "/article-images/math-with-rust-roadmap.webp"
 publish: true
@@ -29,6 +30,8 @@ Classifiquei esses algoritmos em **7 módulos distintos**, desenvolvi implementa
 
 ## 1. Módulo 1: Fundamentos Algébricos e Divisão e Conquista
 
+**Leia o artigo completo:** [Módulo 1 — Fundamentos Algébricos e Divisão e Conquista](/pt/articles/matematica-com-rust-modulo-1/).
+
 O foco deste módulo inicial é demonstrar como abordagens ingênuas em $\mathcal{O}(n)$ podem ser elegantemente transformadas em operações $\mathcal{O}(\log n)$ ou $\mathcal{O}(1)$ utilizando identidades algébricas e o paradigma de **Divisão e Conquista**.
 
 - **Exponenciação Rápida (Binária):** Explora a relação $x^n = \left(x^{n/2}\right)^2$ para $n$ par, transformando multiplicações lineares em passos logarítmicos $\mathcal{O}(\log n)$. É amplamente utilizada em criptografia moderna e recorrências lineares.
@@ -42,6 +45,8 @@ que substituem laços pesados em $\mathcal{O}(n)$ por matemática direta em $\ma
 - **Logaritmos ($\log_b(x)$ e $\ln(x)$):** Indispensáveis para escalonamento de dados, modelagem de crescimento contínuo e análise dos limites teóricos de estruturas de dados em árvore.
 
 ## 2. Módulo 2: Otimização em Vetores e Estado Linear
+
+**Leia o artigo completo:** [Módulo 2 — Otimização em Vetores e Estado Linear](/pt/articles/matematica-com-rust-modulo-2/).
 
 Uma transição fluida da álgebra escalar para a **Programação Dinâmica Básica** e processamento contínuo de fluxos de dados.
 

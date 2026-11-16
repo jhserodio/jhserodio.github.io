@@ -4,7 +4,7 @@ description: "Dominando o algoritmo de Kadane, somas de prefixos para consultas 
 lang: pt
 translationKey: math-with-rust-module-2-array-optimization
 publishedAt: 2026-11-09
-tags: [rust, mathematics, numerical-analysis, algorithms, dynamic-programming]
+tags: [rust, mathematics, numerical-analysis, algorithms, dynamic-programming, math-with-rust]
 cover: "/article-images/math-with-rust-module-2.webp"
 publish: true
 ---

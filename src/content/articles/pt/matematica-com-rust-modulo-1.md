@@ -4,7 +4,7 @@ description: "Mergulhando em exponenciação binária, busca binária, progress�
 lang: pt
 translationKey: math-with-rust-module-1-algebraic-foundations
 publishedAt: 2026-08-16
-tags: [rust, mathematics, numerical-analysis, algorithms, divide-and-conquer]
+tags: [rust, mathematics, numerical-analysis, algorithms, divide-and-conquer, math-with-rust]
 cover: "/article-images/math-with-rust-module-1.jpg"
 publish: true
 ---

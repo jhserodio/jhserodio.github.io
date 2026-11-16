@@ -1,0 +1,159 @@
+---
+import ArticleCard from './ArticleCard.astro';
+import type { Article } from '../lib/content';
+import type { Lang } from '../i18n/ui';
+
+interface Props { lang: Lang; articles: Article[] }
+const { lang, articles } = Astro.props;
+const words = lang === 'pt' ? {
+  heading: 'Filtrar por tags',
+  hint: 'Selecione uma ou mais tags para refinar os artigos.',
+  clear: 'Limpar filtros',
+  shown: 'Artigos exibidos',
+  empty: 'Nenhum artigo corresponde às tags selecionadas. Limpe os filtros ou escolha outras tags.',
+} : {
+  heading: 'Filter by tags',
+  hint: 'Select one or more tags to narrow the articles.',
+  clear: 'Clear filters',
+  shown: 'Articles shown',
+  empty: 'No articles match the selected tags. Clear the filters or choose other tags.',
+};
+const tagCounts = new Map<string, number>();
+for (const article of articles) {
+  for (const tag of new Set(article.data.tags)) {
+    tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+  }
+}
+const facets = [...tagCounts.entries()]
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([tag, count]) => ({ tag, count }));
+---
+{facets.length > 0 && (
+  <section class="filter-panel" data-article-filters aria-labelledby="article-tag-filter-heading">
+    <div class="filter-header">
+      <div>
+        <h2 id="article-tag-filter-heading">{words.heading}</h2>
+        <p class="filter-hint">{words.hint}</p>
+      </div>
+      <button class="clear-filter" type="button" data-clear-filters disabled>{words.clear}</button>
+    </div>
+    <div class="filter-options" role="group" aria-label={words.heading}>
+      {facets.map(({tag, count}) => (
+        <button class="filter-chip" type="button" data-filter-tag={tag} aria-pressed="false" aria-controls="filtered-articles">
+          {tag} <span class="filter-count" aria-hidden="true">{count}</span>
+        </button>
+      ))}
+    </div>
+    <p class="filter-status" data-filter-status data-label={words.shown} role="status" aria-live="polite">
+      {words.shown}: {articles.length} / {articles.length}
+    </p>
+  </section>
+)}
+<div id="filtered-articles" class="card-grid filter-results">
+  {articles.map(article => (
+    <div class="filter-item" data-article-item data-tags={JSON.stringify(article.data.tags)}>
+      <ArticleCard article={article} lang={lang} />
+    </div>
+  ))}
+</div>
+<p class="filter-empty" data-filter-empty hidden>{words.empty}</p>
+
+<script>
+  // The list remains fully visible without JavaScript.
+  const root = document.querySelector<HTMLElement>('[data-article-filters]');
+  if (root) {
+    const buttons = [...root.querySelectorAll<HTMLButtonElement>('[data-filter-tag]')];
+    const clear = root.querySelector<HTMLButtonElement>('[data-clear-filters]');
+    const status = root.querySelector<HTMLElement>('[data-filter-status]');
+    const empty = document.querySelector<HTMLElement>('[data-filter-empty]');
+    const allowed = new Set(buttons.map(button => button.dataset.filterTag).filter((tag): tag is string => !!tag));
+    const items = [...document.querySelectorAll<HTMLElement>('[data-article-item]')].map(node => {
+      const tags: string[] = JSON.parse(node.dataset.tags ?? '[]');
+      return { node, tags: new Set(tags) };
+    });
+    const fromUrl = () => new Set(new URL(window.location.href).searchParams.getAll('tag').filter(tag => allowed.has(tag)));
+    let selected = fromUrl();
+
+    function render() {
+      let count = 0;
+      for (const {node, tags} of items) {
+        const matches = [...selected].every(tag => tags.has(tag));
+        node.hidden = !matches;
+        if (matches) count++;
+      }
+      for (const button of buttons) button.setAttribute('aria-pressed', String(selected.has(button.dataset.filterTag ?? '')));
+      if (clear) clear.disabled = selected.size === 0;
+      if (status) status.textContent = `${status.dataset.label ?? ''}: ${count} / ${items.length}`;
+      if (empty) empty.hidden = count !== 0;
+    }
+
+    function save() {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('tag');
+      for (const tag of [...selected].sort()) url.searchParams.append('tag', tag);
+      window.history.pushState(null, '', url);
+    }
+
+    for (const button of buttons) {
+      button.addEventListener('click', () => {
+        const tag = button.dataset.filterTag;
+        if (!tag) return;
+        if (selected.has(tag)) selected.delete(tag);
+        else selected.add(tag);
+        render();
+        save();
+      });
+    }
+    clear?.addEventListener('click', () => {
+      selected.clear();
+      render();
+      save();
+    });
+    window.addEventListener('popstate', () => {
+      selected = fromUrl();
+      render();
+    });
+    render();
+  }
+</script>
+
+<style>
+  .filter-panel {
+    border: 1px solid var(--line-soft);
+    background: rgba(16, 21, 29, .42);
+    border-radius: .75rem;
+    padding: clamp(.9rem, 2vw, 1.4rem);
+    margin: 1rem 0 1.5rem;
+  }
+  .filter-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: start;
+    justify-content: space-between;
+    gap: .75rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .filter-header h2 { margin: 0 0 .35rem; color: var(--accent-soft); font-size: 1.12rem; }
+  .filter-hint { margin: 0; font-size: .86rem; color: var(--muted); }
+  .clear-filter { flex: none; border-radius: .55rem; font-size: .83rem; background: transparent; border-color: var(--accent-soft); }
+  .clear-filter:disabled { opacity: .45; }
+  .filter-options { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .filter-chip {
+    display: inline-flex; align-items: center; gap: .4rem;
+    max-width: 100%; padding: .35rem .65rem; line-height: 1.4;
+    font-size: .82rem; border-radius: 100px;
+    background: rgba(67,89,117,.14); border: 1px solid var(--line);
+    color: var(--accent); overflow-wrap: anywhere;
+    transition: background-color .15s, color .15s, border-color .15s;
+  }
+  .filter-chip:hover { border-color: var(--accent-soft); background: rgba(67,89,117,.3); }
+  .filter-chip[aria-pressed="true"] { color: var(--panel); background: var(--accent); border-color: var(--accent); font-weight: 700; }
+  .filter-count { color: inherit; opacity: .8; font-size: .72rem; }
+  .filter-status { color: var(--muted); margin: 1rem 0 0; font-size: .84rem; }
+  .filter-item { min-width: 0; }
+  .filter-item :global(.card) { height: 100%; }
+  .filter-item[hidden], .filter-empty[hidden] { display: none !important; }
+  .filter-empty { border: 1px dashed var(--line); border-radius: .5rem; padding: 1rem; color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) { .filter-chip { transition: none; } }
+  @media print { .filter-panel { display: none; } .filter-item[hidden] { display: block !important; } }
+</style>
