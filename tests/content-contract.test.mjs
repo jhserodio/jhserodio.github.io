@@ -69,3 +69,11 @@ test('canonical domain matches original Pages configuration', () => {
   assert.match(read('astro.config.mjs'), /https:\/\/serodio\.dev/);
   assert.equal(read('public/CNAME').trim(), 'serodio.dev');
 });
+
+test('footer uses the requested professional identity without Astro branding', () => {
+  const footer = read('src/components/Footer.astro');
+  const ui = read('src/i18n/ui.ts');
+  assert.match(footer, /jhserodio · \{t\(lang\)\.footer\}/);
+  assert.equal((ui.match(/Software Developer, Architect, Tech Leader and Mathematician/g) ?? []).length, 2);
+  assert.doesNotMatch(ui, /Base Astro|Astro base/);
+});
