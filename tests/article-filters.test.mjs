@@ -26,6 +26,26 @@ test('articles page exposes accessible locale-aware tag filtering and clear acti
   assert.match(filter, /new Set\(article\.data\.tags\)/);
 });
 
+
+test('discovery uses an 80/20 sidebar and an accessible mobile disclosure', () => {
+  const source = read('src/components/ArticlesDiscovery.astro');
+  assert.match(source, /grid-template-columns:\s*minmax\(0,\s*4fr\)\s+minmax\(0,\s*1fr\)/);
+  assert.match(source, /grid-template-areas:\s*"articles filters"/);
+  assert.match(source, /@media\s*\(max-width:\s*55rem\)/);
+  assert.match(source, /grid-template-areas:\s*"filters" "articles"/);
+  assert.match(source, /<aside[^>]+data-article-filters/);
+  assert.match(source, /data-sidebar-toggle/);
+  assert.match(source, /aria-expanded="false"/);
+  assert.match(source, /aria-controls="sidebar-filter-content"/);
+  assert.match(source, /data-active-filter-count/);
+  assert.match(source, /mobileToggle\.addEventListener\('click'/);
+  assert.match(source, /mobileToggle\.setAttribute\('aria-expanded'/);
+  assert.match(source, /data-enhanced="true"/);
+  assert.match(source, /:not\(\[data-expanded="true"\]\) \.filter-panel/);
+  assert.match(source, /\.filter-item\[hidden\]/);
+  assert.match(source, /@media print/);
+});
+
 test('math-with-rust tag is present on roadmap, module 1 and module 2 only', () => {
   for (const lang of ['pt', 'en']) {
     const files = readdirSync(path.join(root,'src/content/articles',lang)).filter(name => /\.mdx?$/.test(name));
