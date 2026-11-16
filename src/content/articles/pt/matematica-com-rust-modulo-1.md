@@ -5,7 +5,7 @@ lang: pt
 translationKey: math-with-rust-module-1-algebraic-foundations
 publishedAt: 2026-08-16
 tags: [rust, mathematics, numerical-analysis, algorithms, divide-and-conquer]
-cover: "/math-with-rust-mod1-cover.svg"
+cover: "/article-images/math-with-rust-module-1.jpg"
 publish: true
 ---
 
@@ -17,10 +17,7 @@ Neste módulo, exploraremos o poder absoluto do paradigma de **Divisão e Conqui
 
 Compreender esses algoritmos não é mero exercício acadêmico; é a fundação para escrever software de alta performance. Exploraremos a matemática, aplicações reais de mercado (com exemplos _open source_), padrões de entrevistas técnicas e implementações em [Rust](https://doc.rust-lang.org/book/) de baixo nível (_bare-metal_).
 
-<figure>
-  <img src="/math-with-rust-mod1-cover.svg" width="960" height="480" loading="lazy" alt="Diagrama ilustrando a redução em árvore da exponenciação binária e bissecção de intervalos em Rust." />
-  <figcaption>Figura 1 — Redução assintótica de laços lineares $\mathcal{O}(n)$ para estruturas de árvore binária $\mathcal{O}(\log n)$.</figcaption>
-</figure>
+
 
 ## 1. Exponenciação Rápida (Exponenciação Binária)
 

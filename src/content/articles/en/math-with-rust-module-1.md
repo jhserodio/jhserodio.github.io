@@ -5,7 +5,7 @@ lang: en
 translationKey: math-with-rust-module-1-algebraic-foundations
 publishedAt: 2026-08-16
 tags: [rust, mathematics, numerical-analysis, algorithms, divide-and-conquer]
-cover: "/math-with-rust-mod1-cover.svg"
+cover: "/article-images/math-with-rust-module-1.jpg"
 publish: true
 ---
 
@@ -17,10 +17,7 @@ In this module, we will explore the pure power of the **Divide and Conquer** par
 
 Understanding these algorithms is not just an academic exercise; it is the foundation of writing high-performance software. We will explore the math, real-world market applications (with open-source examples), interview patterns, and bare-metal [Rust](https://doc.rust-lang.org/book/) implementations.
 
-<figure>
-  <img src="/math-with-rust-mod1-cover.svg" width="960" height="480" loading="lazy" alt="Diagram illustrating binary exponentiation tree reduction and interval bisection in Rust." />
-  <figcaption>Figure 1 — Asymptotic reduction from $\mathcal{O}(n)$ linear loops to $\mathcal{O}(\log n)$ binary tree structures.</figcaption>
-</figure>
+
 
 ## 1. Fast Exponentiation (Binary Exponentiation)
 
