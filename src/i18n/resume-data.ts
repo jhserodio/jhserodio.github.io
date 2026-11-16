@@ -71,6 +71,33 @@ function toResume(data: SourceResume, me: SourceMe, lang: Lang): ResumeData {
       technologies: ['Neovim', 'Lua'],
       links: { github: 'https://github.com/jhserodio/vim-grimory' },
     },
+    {
+      title: 'Vision Transformer Optimization — Scientific Research',
+      category: 'academic' as const,
+      description: lang === 'pt'
+        ? 'Iniciação científica em otimização de Vision Transformers para identificação de regiões tumorais em imagens histológicas de carcinoma espinocelular oral (OSCC). Pesquisa em álgebra linear, métodos numéricos e inferência em GPU com Rust, Candle e CUDA; protótipo em desenvolvimento.'
+        : 'Undergraduate research on optimizing Vision Transformers to identify tumor regions in oral squamous cell carcinoma (OSCC) histology images. Studies linear algebra, numerical methods, and GPU inference with Rust, Candle, and CUDA; prototype in progress.',
+      technologies: ['Rust', 'Candle', 'CUDA', 'Vision Transformers', 'Numerical Methods'],
+      links: { github: 'https://github.com/jhserodio/exploring-vit-algorithms-improvments' },
+    },
+    {
+      title: 'Self-hosted Qwen Code Agent',
+      category: 'open-source' as const,
+      description: lang === 'pt'
+        ? 'Agente local de assistência à programação para uso com o vim-grimory. Combina API Node.js, modelos Qwen via Ollama e recuperação de contexto com Qdrant; oferece consultas ao código, revisão e propostas de edição com aprovação explícita.'
+        : 'Local-first coding agent for use with vim-grimory. Combines a Node.js API, Qwen models served by Ollama, and Qdrant-backed context retrieval; supports codebase questions, review, and approval-gated edit proposals.',
+      technologies: ['Node.js', 'JavaScript', 'Qwen', 'Ollama', 'Qdrant', 'RAG', 'Neovim', 'Docker'],
+      links: { github: 'https://github.com/vnator/selfhosted-qwen-codeagent' },
+    },
+    {
+      title: 'Capacitated Vehicle Routing — Deterministic to Stochastic',
+      category: 'academic' as const,
+      description: lang === 'pt'
+        ? 'Modelo matemático para otimização de rotas de entrega (CVRP), em fase de formulação determinística com programação inteira mista (MILP), programação dinâmica e restrições de capacidade e distância. A evolução planejada é uma abordagem estocástica para entregas em cadeias de restaurantes, inspirada em cenários de plataformas como o iFood.'
+        : 'Mathematical vehicle-routing model (CVRP), currently in the deterministic formulation stage with mixed-integer linear programming (MILP), dynamic programming, and capacity/distance constraints. A planned stochastic extension will explore restaurant-chain deliveries inspired by platforms such as iFood.',
+      technologies: ['Rust', 'CVRP', 'MILP', 'Dynamic Programming', 'Operations Research'],
+      links: { github: 'https://github.com/jhserodio/logistic_problem_with_max_capacity' },
+    },
   ];
 
   const stack = data.stack;

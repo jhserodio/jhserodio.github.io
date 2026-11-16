@@ -13,6 +13,10 @@ const { lang } = Astro.props;
 const u = t(lang);
 const resume = getResume(lang);
 const me = lang === 'pt' ? mePt : meEn;
+const projectCategoryLabels = {
+  pt: { academic: 'Acadêmico', 'open-source': 'Código aberto', production: 'Produção' },
+  en: { academic: 'Academic', 'open-source': 'Open source', production: 'Production' },
+} as const;
 const contacts = [
   { label: me.contact.email.label, value: me.contact.email.value, href: `mailto:${me.contact.email.value}`, external: false },
   { label: me.contact.numberPhone.label, value: me.contact.numberPhone.value, href: `tel:${me.contact.numberPhone.value.replace(/[^+\d]/g, '')}`, external: false },
@@ -113,7 +117,7 @@ const contacts = [
         {resume.projects.map(project => (
           <article class="card resume-project-card">
             <h3>{project.title}</h3>
-            <small>{project.category}</small>
+            <small>{projectCategoryLabels[lang][project.category]}</small>
             <p>{project.description}</p>
             <ul class="tags" aria-label={lang === 'pt' ? 'Tecnologias' : 'Technologies'}>
               {project.technologies.map(tech => <li>{tech}</li>)}
