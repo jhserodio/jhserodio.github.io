@@ -1,80 +1,33 @@
 ---
-import GuildCard from '../layouts/GuildCard.astro'
-import {
-  ME_EMAIL,
-  ME_GITHUB,
-  ME_LINKEDIN,
-  MEDIUM,
-  LEET_CODE
-} from '../helpers/constants';
-import { meEn } from '../i18n/me/en';
-
+// O GitHub Pages é estático: a escolha inicial precisa acontecer no navegador.
+// Visitas a /pt/ ou /en/ nunca são sobrescritas pela detecção automática.
 ---
-<GuildCard>
-  <style>
-    .content {
-      --width: 280px;
-
-
-      padding: calc(var(--space-lg)*4) 0;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .me {
-      padding: var(--space-lg) 0;
-      max-width: var(--width)
-    }
-
-    .me p {
-      text-align: left;
-    }
-
-    .list {
-      list-style: none;
-      padding: 0;
-      width: var(--width);
-    }
-
-    .item {
-      margin: var(--space) 0;
-    }
-
-    .link {
-      text-decoration: none;
-      width: var(--width);
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid var(--primary);
-      color: var(--primary-lightest);
-      transition: all ease .2s;
-    }
-
-    .link:hover {
-      background: var(--primary-shine);
-      border-color: var(--primary-dark);
-      color: var(--primary-dark);
-    }
-
-  </style>
-
-	<div class="content">
-     <div class="me">
-        <h2 class="title">See my pages and contacts</h2>
-     </div>
-     <ul class="list">
-      <li class="item"><a class="link" href="/resume">Resume</a></li>
-      <li class="item"><a class="link" href="/cover-letter">Cover Letter</a></li>
-      <!-- <li class="item"><a class="link" href="/news">Blog</a></li> -->
-      <li class="item"><a class="link" href={LEET_CODE} target="_blank">LeetCode</a></li>
-      <li class="item"><a class="link" href={ME_LINKEDIN} target="_blank">Linkedin</a></li>
-      <li class="item"><a class="link" href={ME_GITHUB} target="_blank">Github</a></li>
-      <li class="item"><a class="link" href={MEDIUM} target="_blank">My Articles</a></li>
-      <li class="item"><a class="link" href={`mailto:${ME_EMAIL}`} target="_blank">{ME_EMAIL}</a></li>
-    </ul>
-  </div>
-</GuildCard>
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, follow" />
+    <title>João Henrique Serodio — Language / Idioma</title>
+    <script is:inline>
+      (() => {
+        const key = 'jhserodio:locale';
+        let saved;
+        try { saved = localStorage.getItem(key); } catch { /* navegação privada / bloqueada */ }
+        let detected = 'pt';
+        for (const language of navigator.languages || [navigator.language]) {
+          const primary = String(language || '').toLowerCase().split('-')[0];
+          if (primary === 'en' || primary === 'pt') { detected = primary; break; }
+        }
+        const locale = saved === 'en' || saved === 'pt' ? saved : detected;
+        window.location.replace('/' + locale + '/');
+      })();
+    </script>
+  </head>
+  <body>
+    <main>
+      <p>Selecione o idioma / Select your language:</p>
+      <p><a href="/pt/">Português (Brasil)</a> · <a href="/en/">English (US)</a></p>
+    </main>
+  </body>
+</html>

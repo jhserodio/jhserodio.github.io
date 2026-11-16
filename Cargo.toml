@@ -1,0 +1,4 @@
+# Workspace reservado para a Fase 3 (módulos WASM).
+[workspace]
+resolver = "2"
+members = []

@@ -1,0 +1,31 @@
+export const ui = {
+  pt: {
+    nav: { home: 'Início', resume: 'Currículo', articles: 'Artigos', apps: 'Apps', coverLetter: 'Carta de apresentação' },
+    hero: 'Engenharia de software, matemática e projetos.',
+    intro: 'Estrutura inicial do portfólio. O conteúdo poderá ser substituído gradualmente durante a migração.',
+    latest: 'Artigos recentes', viewAll: 'Ver todos',
+    resumeTitle: 'Currículo', experiences: 'Experiência', projects: 'Projetos', education: 'Formação',
+    articlesTitle: 'Artigos', appsTitle: 'Apps e experimentos',
+    noArticles: 'Nenhum artigo publicado ainda.', noApps: 'Nenhum app cadastrado ainda.',
+    back: 'Voltar', readMore: 'Ler artigo', planned: 'Em breve',
+    run: 'Executar', payload: 'Entrada JSON', response: 'Resultado',
+    footer: 'Site pessoal • Base Astro', language: 'Idioma',
+    coverTitle: 'Carta de apresentação', coverIntro: 'Página base para futuras cartas de apresentação.',
+    notFound: 'Página não encontrada', notFoundText: 'Verifique o endereço ou volte ao início.',
+  },
+  en: {
+    nav: { home: 'Home', resume: 'Resume', articles: 'Articles', apps: 'Apps', coverLetter: 'Cover letter' },
+    hero: 'Software engineering, mathematics and projects.',
+    intro: 'An initial portfolio structure. Content can be migrated progressively.',
+    latest: 'Recent articles', viewAll: 'View all',
+    resumeTitle: 'Resume', experiences: 'Experience', projects: 'Projects', education: 'Education',
+    articlesTitle: 'Articles', appsTitle: 'Apps and experiments',
+    noArticles: 'No articles published yet.', noApps: 'No apps registered yet.',
+    back: 'Back', readMore: 'Read article', planned: 'Coming soon',
+    run: 'Run', payload: 'JSON input', response: 'Output',
+    footer: 'Personal website • Astro base', language: 'Language',
+    coverTitle: 'Cover letter', coverIntro: 'Base page for future cover letters.',
+    notFound: 'Page not found', notFoundText: 'Check the URL or return home.',
+  },
+} as const;
+export type Lang = keyof typeof ui;

@@ -1,0 +1,31 @@
+:root {
+  /* Original master palette, kept as the single source of truth. */
+  color-scheme: dark;
+  --surface: #1d242e;
+  --panel: #10151d;
+  --panel-raised: #172232;
+  --text: #e6edf6;
+  --muted: #b0bed0;
+  --line: #435975;
+  --line-soft: #2e3c51;
+  --accent: #8fc9ff;
+  --accent-soft: #7895bb;
+  --focus: #c8e7ff;
+
+  /* The original master uses 3% white on the backdrop and 1% in
+     the header, not the 6.5% grid of the previous implementation. */
+  --grid-line-soft: rgba(255, 255, 255, .03);
+  --grid-line: rgba(255, 255, 255, .01);
+
+  --grid-background:
+    linear-gradient(0deg, transparent 24%, var(--grid-line-soft) 25%, var(--grid-line-soft) 26%, transparent 27%, transparent 74%, var(--grid-line-soft) 75%, var(--grid-line-soft) 76%, transparent 77%),
+    linear-gradient(90deg, transparent 24%, var(--grid-line-soft) 25%, var(--grid-line-soft) 26%, transparent 27%, transparent 74%, var(--grid-line-soft) 75%, var(--grid-line-soft) 76%, transparent 77%);
+  --grid-glass:
+    linear-gradient(0deg, transparent 24%, var(--grid-line) 25%, var(--grid-line) 26%, transparent 27%, transparent 74%, var(--grid-line) 75%, var(--grid-line) 76%, transparent 77%),
+    linear-gradient(90deg, transparent 24%, var(--grid-line) 25%, var(--grid-line) 26%, transparent 27%, transparent 74%, var(--grid-line) 75%, var(--grid-line) 76%, transparent 77%);
+
+  /* Keep the surface genuinely translucent: the 10px grid remains
+     visible through the panel, while a soft radial glow adds depth. */
+  --glass-surface: rgba(16, 21, 29, .74);
+  --shine: radial-gradient(500px 200px at 50% 0%, rgba(46, 60, 81, .28) 20%, rgba(16, 21, 29, .10) 100%);
+}

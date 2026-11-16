@@ -1,0 +1,13 @@
+{
+  "title": "vim-grimory",
+  "description": "Configuração pessoal do Neovim.",
+  "lang": "pt",
+  "type": "external-link",
+  "status": "active",
+  "externalUrl": "https://github.com/jhserodio/vim-grimory",
+  "pricing": "open-source",
+  "tags": [
+    "Neovim",
+    "Lua"
+  ]
+}
