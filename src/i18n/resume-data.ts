@@ -3,6 +3,7 @@ import { resumePt } from './resume/pt';
 import { resumeEn } from './resume/en';
 import { mePt } from './me/pt';
 import { meEn } from './me/en';
+import { summaries, experienceExtras, projectExtras } from './resume/enrichment';
 import type { Lang } from './ui';
 
 // Source: the original public resume (master branch). Keep role/date/description
@@ -37,6 +38,7 @@ function toResume(data: SourceResume, me: SourceMe, lang: Lang): ResumeData {
     .map(([id, source]) => {
       if (!source || typeof source !== 'object' || !('describe' in source)) return null;
       const job = source as { company: string; employ: string; started: string; finished: string; describe: string };
+      const extra = experienceExtras[lang][id];
       return {
         id,
         company: job.company,
@@ -45,9 +47,9 @@ function toResume(data: SourceResume, me: SourceMe, lang: Lang): ResumeData {
           start: job.started.trim(),
           end: /hoje|present/i.test(job.finished) ? null : job.finished.trim(),
         },
-        description: job.describe.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean),
-        achievements: [] as string[],
-        technologies: technologies[id] ?? [],
+        description: extra?.description ?? job.describe.split(/\n\s*\n/).map(s => s.trim()).filter(Boolean),
+        achievements: extra?.achievements ?? [],
+        technologies: [...new Set([...(technologies[id] ?? []), ...(extra?.technologies ?? [])])],
       };
     })
     .filter((value): value is NonNullable<typeof value> => value !== null);
@@ -100,11 +102,33 @@ function toResume(data: SourceResume, me: SourceMe, lang: Lang): ResumeData {
     },
   ];
 
+  // Present the mathematical research and Rust experience without changing
+  // source role chronology, or turning research prototypes into production.
+  const featuredOrder = [
+    'Quantitative Developer Roadmap',
+    'Vision Transformer Optimization — Scientific Research',
+    'Capacitated Vehicle Routing — Deterministic to Stochastic',
+    'Self-hosted Qwen Code Agent',
+    'vim-grimory',
+  ];
+  const enrichedProjects = projects.map(project => {
+    const extra = projectExtras[lang][project.title];
+    return {
+      ...project,
+      description: extra?.description ?? project.description,
+      highlights: extra?.highlights ?? [],
+      technologies: [...new Set([...project.technologies, ...(extra?.technologies ?? [])])],
+      links: project.title === 'Quantitative Developer Roadmap'
+        ? { ...project.links, articleSlug: lang === 'pt' ? 'matematica-com-rust-roadmap' : 'math-with-rust-roamap-series' }
+        : project.links,
+    };
+  }).sort((a,b) => featuredOrder.indexOf(a.title) - featuredOrder.indexOf(b.title));
+
   const stack = data.stack;
   return ResumeSchema.parse({
-    summary: me.about.bio,
+    summary: summaries[lang],
     experiences,
-    projects,
+    projects: enrichedProjects,
     education: [
       {
         institution: 'UCP — Universidade do Centro do Paraná',
@@ -112,9 +136,9 @@ function toResume(data: SourceResume, me: SourceMe, lang: Lang): ResumeData {
         period: { start: '2008', end: '2012' },
       },
       {
-        institution: lang === 'pt' ? 'Matemática Aplicada Computacional' : 'Applied Computational Mathematics',
-        degree: lang === 'pt' ? 'Segunda graduação, em andamento' : 'Second undergraduate degree, in progress',
-        period: { start: lang === 'pt' ? 'Em andamento' : 'In progress', end: null },
+        institution: 'UNICENTRO — Universidade Estadual do Centro-Oeste',
+        degree: lang === 'pt' ? 'Bacharelado em Matemática Aplicada Computacional (em andamento)' : 'B.Sc. in Applied Computational Mathematics (in progress)',
+        period: { start: '2024', end: null },
       },
     ],
     skills: [

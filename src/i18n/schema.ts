@@ -16,6 +16,7 @@ export const ResumeSchema = z.object({
     title: z.string().min(1),
     category: z.enum(['academic', 'open-source', 'production']),
     description: z.string().min(1),
+    highlights: z.array(z.string().min(1)).default([]),
     technologies: z.array(z.string()),
     links: z.object({
       github: z.string().url().optional(),

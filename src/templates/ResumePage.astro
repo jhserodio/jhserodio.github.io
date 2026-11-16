@@ -6,6 +6,7 @@ import { mePt } from '../i18n/me/pt';
 import { meEn } from '../i18n/me/en';
 import type { Lang } from '../i18n/ui';
 import '../styles/resume.css';
+import { localePath } from '../i18n/utils';
 
 interface Props { lang: Lang }
 
@@ -119,11 +120,21 @@ const contacts = [
             <h3>{project.title}</h3>
             <small>{projectCategoryLabels[lang][project.category]}</small>
             <p>{project.description}</p>
+            {project.highlights.length > 0 && (
+              <ul class="resume-project-highlights">
+                {project.highlights.map(highlight => <li>{highlight}</li>)}
+              </ul>
+            )}
             <ul class="tags" aria-label={lang === 'pt' ? 'Tecnologias' : 'Technologies'}>
               {project.technologies.map(tech => <li>{tech}</li>)}
             </ul>
             <div class="resume-project-links">
               {project.links.github && <a href={project.links.github} target="_blank" rel="noopener noreferrer">GitHub</a>}
+              {project.links.articleSlug && (
+                <a href={localePath(lang, `articles/${project.links.articleSlug}`)}>
+                  {lang === 'pt' ? 'Ler série Math with Rust' : 'Read Math with Rust series'}
+                </a>
+              )}
               {project.links.live && <a href={project.links.live} target="_blank" rel="noopener noreferrer">Live</a>}
             </div>
           </article>
