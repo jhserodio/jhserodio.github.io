@@ -13,7 +13,7 @@ tags:
     optimization,
     algorithms,
   ]
-cover: "/math-with-rust-series-cover.svg"
+cover: "/article-images/math-with-rust-roadmap.webp"
 publish: true
 ---
 
@@ -25,10 +25,7 @@ During this return to academia, I shifted my primary focus from pure application
 
 I classified these algorithms into **7 distinct modules**, built tested implementations in [Rust](https://doc.rust-lang.org/book/), and structured this multi-part series to share both the mathematical formulation and bare-metal implementation of each group. In this introductory article, we will establish the theoretical roadmap and algorithmic complexity goals for all seven modules.
 
-<figure>
-  <img src="/math-with-rust-series-cover.svg" width="960" height="480" loading="lazy" alt="Diagram mapping the 7 modules of the Math with Rust series from Algebraic Foundations to Discrete Geometry and Complexity Reduction." />
-  <figcaption>Figure 1 — Overview of the 7-module Computational Applied Mathematics roadmap and asymptotic complexity targets.</figcaption>
-</figure>
+
 
 ## 1. Module 1: Algebraic Foundations and Divide and Conquer
 

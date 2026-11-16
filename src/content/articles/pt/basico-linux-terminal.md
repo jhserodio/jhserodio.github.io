@@ -5,7 +5,7 @@ lang: pt
 translationKey: linux-terminal-grimoire-basics
 publishedAt: 2026-08-21
 tags: [linux, terminal, developer, nodejs, linux-commands]
-cover: "/linux-terminal-grimoire-cover.svg"
+cover: "/article-images/linux-terminal-basic.webp"
 publish: true
 ---
 
@@ -17,10 +17,7 @@ Nesta saga, vamos desbravar os comandos fundamentais. E não importa a qual guil
 
 Antes de tudo, para abrir o terminal no seu sistema operacional, caso não tenha experiência, basta digitar `"terminal"` na barra de pesquisa do seu sistema.
 
-<figure>
-  <img src="/linux-terminal-grimoire-cover.svg" width="960" height="480" loading="lazy" alt="Ilustração da hierarquia do sistema de arquivos Linux desde a raiz (/) até o diretório Home (~) e configuração do emulador de terminal." />
-  <figcaption>Figura 1 — Anatomia da árvore de diretórios do Linux e pipeline de execução do shell.</figcaption>
-</figure>
+
 
 ## 1. Primeira Parte: Comandos Fundamentais
 

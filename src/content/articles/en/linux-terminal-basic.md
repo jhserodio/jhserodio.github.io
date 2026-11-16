@@ -5,7 +5,7 @@ lang: en
 translationKey: linux-terminal-grimoire-basics
 publishedAt: 2026-08-21
 tags: [linux, terminal, developer, nodejs, linux-commands]
-cover: "/linux-terminal-grimoire-cover.svg"
+cover: "/article-images/linux-terminal-basic.webp"
 publish: true
 ---
 
@@ -17,10 +17,7 @@ In this saga, we will master the foundational commands. Regardless of which guil
 
 First of all, if you have never opened the terminal on your operating system, simply press your system key and type `"terminal"` into the search bar.
 
-<figure>
-  <img src="/linux-terminal-grimoire-cover.svg" width="960" height="480" loading="lazy" alt="Illustration of the Linux filesystem hierarchy from root (/) to the Home directory (~) and terminal emulator pipeline." />
-  <figcaption>Figure 1 — Anatomy of the Linux directory tree and shell execution pipeline.</figcaption>
-</figure>
+
 
 ## 1. Part One: Foundational Commands
 

@@ -5,7 +5,7 @@ lang: pt
 translationKey: debugging-rust-terminal-gdb
 publishedAt: 2026-10-09
 tags: [rust, gdb, debugging, cargo, linux, algorithms]
-cover: "/debugging-rust-gdb-cover.svg"
+cover: "/article-images/debugging-rust-gdb.webp"
 publish: true
 ---
 
@@ -17,10 +17,7 @@ Rust introduces high-level abstractions that govern how we interact with memory�
 
 In this article, we will reproduce our Binary Search debugging session using **Rust**, **Cargo**, and **GDB**, observing how the debugger represents Rust types and how to inspect raw slice memory through **`rust-gdb`**—a wrapper provided by the Rust toolchain that preloads GDB with pretty-printers for Rust data structures.
 
-<figure>
-  <img src="/debugging-rust-gdb-cover.svg" width="960" height="480" loading="lazy" alt="Diagram showing a Rust fat-pointer slice (&[i32]) on the stack pointing to a contiguous Vec<i32> buffer on the heap during a rust-gdb session." />
-  <figcaption>Figure 1 — Memory representation of a borrowed Rust slice (&[i32]) and interactive inspection via rust-gdb.</figcaption>
-</figure>
+
 
 ## 1. Installing the Toolchain
 

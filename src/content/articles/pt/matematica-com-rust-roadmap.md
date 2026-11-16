@@ -13,7 +13,7 @@ tags:
     optimization,
     algorithms,
   ]
-cover: "/math-with-rust-series-cover.svg"
+cover: "/article-images/math-with-rust-roadmap.webp"
 publish: true
 ---
 
@@ -25,10 +25,7 @@ Durante esse retorno à universidade, direcionei muito mais foco à matemática 
 
 Classifiquei esses algoritmos em **7 módulos distintos**, desenvolvi implementações testadas em [Rust](https://doc.rust-lang.org/book/) para cada um deles e estruturei esta série de artigos para compartilhar tanto a modelagem matemática quanto o código de baixo nível. Neste artigo introdutório, estabeleceremos o mapa teórico, as equações-chave e as aplicações práticas de cada grupo antes de mergulharmos nas implementações específicas nos próximos capítulos.
 
-<figure>
-  <img src="/math-with-rust-series-cover.svg" width="960" height="480" loading="lazy" alt="Diagrama mapeando os 7 módulos da série Matemática com Rust desde Fundamentos Algébricos até Geometria Discreta e redução de complexidade." />
-  <figcaption>Figura 1 — Visão geral do roteiro de 7 módulos em Matemática Aplicada Computacional e metas de complexidade assintótica.</figcaption>
-</figure>
+
 
 ## 1. Módulo 1: Fundamentos Algébricos e Divisão e Conquista
 

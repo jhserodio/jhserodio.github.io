@@ -5,7 +5,7 @@ lang: pt
 translationKey: debugging-c-cpp-gcc-gdb
 publishedAt: 2026-09-30
 tags: [c, cpp, gdb, gcc, debugging, linux, algorithms]
-cover: "/debugging-gcc-gdb-cover.svg"
+cover: "/article-images/debugging-c-gdb.webp"
 publish: true
 ---
 
@@ -15,10 +15,7 @@ Imprimir valores na tela é útil para telemetria, mas isso não é depuração 
 
 Neste artigo, vamos construir esse fluxo completo diretamente pelo terminal utilizando **C**, **GCC** e **GDB** — sem necessidade de nenhuma IDE. Compilaremos uma implementação de Busca Binária (_Binary Search_), iniciaremos o binário dentro do GDB, posicionaremos um _breakpoint_ dentro do laço de busca e observaremos os limites do algoritmo contraírem enquanto o processo está vivo na memória.
 
-<figure>
-  <img src="/debugging-gcc-gdb-cover.svg" width="960" height="480" loading="lazy" alt="Diagrama mostrando o GCC compilando código C com símbolos de debug DWARF e o GDB inspecionando stack frames e breakpoints em um processo em execução." />
-  <figcaption>Figura 1 — Pipeline de compilação com símbolos de depuração (-g3 -O0) e inspeção interativa de processos via GDB.</figcaption>
-</figure>
+
 
 ## 1. Instalando a Toolchain
 

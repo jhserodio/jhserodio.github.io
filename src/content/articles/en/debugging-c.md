@@ -5,7 +5,7 @@ lang: en
 translationKey: debugging-c-cpp-gcc-gdb
 publishedAt: 2026-09-30
 tags: [c, cpp, gdb, gcc, debugging, linux, algorithms]
-cover: "/debugging-gcc-gdb-cover.svg"
+cover: "/article-images/debugging-c-gdb.webp"
 publish: true
 ---
 
@@ -15,10 +15,7 @@ Printing values is helpful for logging, but it is not interactive debugging. A d
 
 In this article, we will build a complete terminal debugging workflow using **C**, **GCC**, and **GDB**—with no IDE required. We will compile a Binary Search implementation, run it inside GDB, place a breakpoint inside the search loop, and observe the search interval contract while the process is alive in memory.
 
-<figure>
-  <img src="/debugging-gcc-gdb-cover.svg" width="960" height="480" loading="lazy" alt="Diagram showing GCC compiling C source with DWARF debug symbols and GDB inspecting stack frames and breakpoints in a running process." />
-  <figcaption>Figure 1 — Compilation pipeline with debug symbols (-g3 -O0) and interactive process inspection via GDB.</figcaption>
-</figure>
+
 
 ## 1. Installing the Toolchain
 

@@ -5,7 +5,7 @@ lang: pt
 translationKey: math-with-rust-module-2-array-optimization
 publishedAt: 2026-11-09
 tags: [rust, mathematics, numerical-analysis, algorithms, dynamic-programming]
-cover: "/math-with-rust-mod2-cover.svg"
+cover: "/article-images/math-with-rust-module-2.webp"
 publish: true
 ---
 

@@ -5,7 +5,7 @@ lang: pt
 translationKey: algorithms-control-flow-mathematics
 publishedAt: 2026-08-27
 tags: [rust, c, algorithms, mathematics, control-flow]
-cover: "/algorithms-control-flow-cover.svg"
+cover: "/article-images/first-steps-control-flow.webp"
 publish: true
 ---
 
@@ -17,10 +17,7 @@ Começar a programar é sempre desafiador. Somos bombardeados por conceitos abst
 
 Ao deixar de lado esses padrões artificiais, este artigo apresenta os conceitos fundamentais de **Controle de Fluxo** (*Control Flow*) utilizando algoritmos matemáticos reais. O objetivo não é criar um atalho superficial, mas estabelecer uma mentalidade de engenharia sólida desde o primeiro dia, focada em aplicação próxima ao hardware (*bare-metal*), manipulação de dados escalares puros e eficiência computacional tanto em **C** quanto em **[Rust](https://doc.rust-lang.org/book/)**.
 
-<figure>
-  <img src="/algorithms-control-flow-cover.svg" width="960" height="480" loading="lazy" alt="Diagrama ilustrando desvios de CPU, tabelas de salto e transições de estado iterativas vs. recursivas em C e Rust." />
-  <figcaption>Figura 1 — Primitivas de controle de fluxo mapeadas para transições de estado matemáticas e desvios de hardware.</figcaption>
-</figure>
+
 
 ## 1. If / Else If / Else (A Função Signum)
 

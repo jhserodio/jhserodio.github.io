@@ -5,7 +5,7 @@ lang: en
 translationKey: algorithms-control-flow-mathematics
 publishedAt: 2026-08-27
 tags: [rust, c, algorithms, mathematics, control-flow]
-cover: "/algorithms-control-flow-cover.svg"
+cover: "/article-images/first-steps-control-flow.webp"
 publish: true
 ---
 
@@ -17,10 +17,7 @@ Learning to program from scratch is demanding. Beginners face a barrage of abstr
 
 Instead of relying on trivial patterns, this article introduces **Control Flow** through concrete mathematical algorithms. The goal is to establish a pragmatic engineering mindset from day one—focused on bare-metal execution, scalar data manipulation, and algorithmic efficiency across both **C** and **[Rust](https://doc.rust-lang.org/book/)**.
 
-<figure>
-  <img src="/algorithms-control-flow-cover.svg" width="960" height="480" loading="lazy" alt="Diagram illustrating CPU branching, jump tables, and iterative vs. recursive state transitions in C and Rust." />
-  <figcaption>Figure 1 — Control flow primitives mapped to mathematical state transitions and hardware branching.</figcaption>
-</figure>
+
 
 ## 1. If / Else If / Else (The Signum Function)
 
