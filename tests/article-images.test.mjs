@@ -22,3 +22,22 @@ test('Module 1 includes the exact JPEG supplied in this conversation', async () 
   const sha = createHash('sha1').update('blob ' + image.length + '\0').update(image).digest('hex');
   assert.equal(sha, '92e5c82032803833f7325ea8c093542cff4bb405');
 });
+
+
+test('JavaScript-to-Rust cover uses the supplied illustration in both locales', async () => {
+  const { createHash } = await import('node:crypto');
+  const image = readFileSync(path.join(root, 'public/article-images/from-javascript-to-rust.avif'));
+  assert.equal(image.toString('ascii', 4, 12), 'ftypavif');
+  const sha = createHash('sha1').update('blob ' + image.length + '\0').update(image).digest('hex');
+  assert.equal(sha, 'fdd31dac8a4b8bf4d01dba04d9908a5107629d43');
+  for (const filename of [
+    'en/from-javascript-to-rust-ownership.md',
+    'pt/do-javascript-para-o-rust-com-ownership.md',
+  ]) {
+    const article = readFileSync(path.join(root, 'src/content/articles', filename), 'utf8');
+    assert.match(article, /cover: "\/article-images\/from-javascript-to-rust\.avif"/);
+    assert.doesNotMatch(article, /from-js-to-rust-cover\.svg/);
+  }
+  const styles = readFileSync(path.join(root, 'src/styles/main.css'), 'utf8');
+  assert.match(styles, /\.article-cover\s*\{[^}]*height:\s*auto/);
+});

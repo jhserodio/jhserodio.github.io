@@ -5,7 +5,7 @@ lang: en
 translationKey: from-javascript-to-rust-ownership
 publishedAt: 2023-12-14
 tags: [rust, javascript, web-development, memory-management, wasm]
-cover: "/from-js-to-rust-cover.svg"
+cover: "/article-images/from-javascript-to-rust.avif"
 publish: true
 ---
 
@@ -20,11 +20,6 @@ Software development often involves using multiple programming languages to buil
 One of Rust’s distinguishing features is its ownership system, designed to ensure memory safety without the need for a Garbage Collector. In simple terms, ownership refers to the responsibility of managing memory resources. Every value in Rust has a variable that is its _owner_, and there can only be one owner at a time. When the owner goes out of scope, Rust automatically deallocates the memory associated with the value on the heap.[^drop]
 
 To prevent data races and ensure memory safety, Rust introduces the **borrow checker**. It analyzes the code at compile time to enforce strict rules on references, preventing common pitfalls like data races, dangling pointers, and null pointer dereferencing.
-
-<figure>
-  <img src="/from-js-to-rust-cover.svg" width="960" height="480" loading="lazy" alt="Diagram comparing stack and heap memory allocation between Rust move semantics and JavaScript shared references." />
-  <figcaption>Figure 1 — Conceptual representation of stack pointers and heap memory during ownership transfer versus reference borrowing.</figcaption>
-</figure>
 
 ## 2. Understanding Move Semantics by Example
 

@@ -5,7 +5,7 @@ lang: pt
 translationKey: from-javascript-to-rust-ownership
 publishedAt: 2023-12-14
 tags: [rust, javascript, web-development, memory-management, wasm]
-cover: "/from-js-to-rust-cover.svg"
+cover: "/article-images/from-javascript-to-rust.avif"
 publish: true
 ---
 
@@ -20,11 +20,6 @@ O desenvolvimento de software frequentemente envolve o uso de múltiplas linguag
 Uma das características mais marcantes do Rust é o seu sistema de _ownership_, projetado para garantir segurança de memória sem a necessidade de um _Garbage Collector_ (Coletor de Lixo). Em termos simples, _ownership_ refere-se à responsabilidade de gerenciar recursos de memória. Cada valor em Rust possui uma variável que é sua _dona_ (_owner_), e só pode haver um único dono por vez. Quando o dono sai de escopo, o Rust desaloca automaticamente a memória associada ao valor na _heap_.[^drop]
 
 Para prevenir condições de corrida (_data races_) e garantir segurança de memória, o Rust introduz o **borrow checker**. Ele analisa o código em tempo de compilação para impor regras estritas sobre referências, prevenindo armadilhas clássicas como _dangling pointers_ (ponteiros soltos) e desreferenciação de ponteiros nulos.
-
-<figure>
-  <img src="/from-js-to-rust-cover.svg" width="960" height="480" loading="lazy" alt="Diagrama comparando a alocação de memória na stack e na heap entre a semântica de move do Rust e referências compartilhadas no JavaScript." />
-  <figcaption>Figura 1 — Representação conceitual de ponteiros na stack e memória na heap durante a transferência de posse versus empréstimo por referência.</figcaption>
-</figure>
 
 ## 2. Entendendo a Semântica de Move na Prática
 
