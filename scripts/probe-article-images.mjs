@@ -1,13 +1,11 @@
-const endpoints = [
-  'https://medium.com/feed/@jhserodio',
-  'https://medium.com/@jhserodio/mathematical-discretization-in-computing-from-continuous-to-the-limit-of-the-machine-ac13946514b3',
-];
-for (const url of endpoints) {
-  try {
-    const response = await fetch(url, {headers: {'User-Agent': 'Mozilla/5.0 (compatible; PortfolioImages/1.0)',Accept: 'text/html,application/rss+xml,application/xml'}});
-    const s=await response.text();
-    const img=(s.match(/https?:\\?\/\\?\/miro\.medium\.com\/[a-zA-Z0-9_:%/.+?=-]+/g)||[]).length;
-    console.log('Endpoint',url,'status',response.status,'bytes',s.length,'RSS item count',(s.match(/<item>/g)||[]).length,'medium urls',img, 'HTML IMG TAGS',(s.match(/<img\b/gi)||[]).length);
-    if (!response.ok) process.exitCode=1;
-  } catch(e){console.error(url,e.message);process.exitCode=1;}
+
+const response=await fetch('https://medium.com/feed/@jhserodio',{headers:{'User-Agent':'Mozilla/5.0','Accept':'application/rss+xml'}});
+const rss=await response.text();
+console.log('RSS status',response.status,'bytes',rss.length);
+const items=[...rss.matchAll(/<item>([\s\S]*?)<\/item>/g)].map(x=>x[1]);
+for(const [i,item] of items.entries()){
+ const title=item.match(/<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>/)?.[1]??'unknown';
+ const link=item.match(/<link>([\s\S]*?)<\/link>/)?.[1]?.slice(0,140)??'none';
+ const urls=[...item.matchAll(/<img[^>]+?src=["']([^"']+)["']/g)].map(x=>x[1]);
+ console.log(JSON.stringify({i,title,link,images:urls.length,srcs:urls.map(u=>u.slice(0,160))}));
 }
