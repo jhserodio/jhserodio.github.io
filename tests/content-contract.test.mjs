@@ -15,10 +15,12 @@ test('real translated articles include mathematics and highlighted code', () => 
   assert.equal(en.data.lang, 'en');
   assert.ok(pt.data.publish && en.data.publish);
   assert.equal(pt.data.translationKey, en.data.translationKey);
-  for (const { content } of [pt, en]) {
+  for (const { content, data } of [pt, en]) {
+    assert.equal(data.cover, '/article-images/math-with-rust-module-1.jpg');
+    assert.ok(existsSync(path.join(root, 'public', data.cover.slice(1))), 'Published cover file is missing');
     assert.ok(content.includes('$$'), 'Missing mathematical display notation');
     assert.ok(content.includes('```rust'), 'Missing Rust source code snippets');
-    assert.ok(content.includes('<figure>'), 'Missing image figures');
+    assert.equal(content.includes('/math-with-rust-mod1-cover.svg'), false, 'Obsolete placeholder figure remains');
   }
   for (const removed of [
     'src/content/articles/pt/boas-vindas.md',
