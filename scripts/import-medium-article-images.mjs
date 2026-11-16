@@ -22,8 +22,7 @@ const definitions = [
     ['floor-function-curve.webp', '3054911155556676'],
   ] },
   { title: 'O mínimo que vc precisa saber sobre Terminal Linux', assets: [['linux-terminal-basic.webp', '1c0f1f33130c1314']] },
-  { title: 'Module 1: Algebraic Foundations', assets: [['math-with-rust-module-1.jpg', '23fcbcd45cdcf030']] },
-  { title: 'Math with Rust', assets: [['math-with-rust-roadmap.webp', '835910b34a183465']] },
+    { title: 'Math with Rust', assets: [['math-with-rust-roadmap.webp', '835910b34a183465']] },
 ];
 const root = process.cwd();
 const mediaDir = join(root, 'public', 'article-images');
@@ -56,7 +55,7 @@ for (const def of definitions) {
   }
   def.item = item;
 }
-if (imageSources.size!==14) throw new Error('Expected exactly 14 unique uploaded artworks');
+if (imageSources.size!==13) throw new Error('Expected exactly 13 validated source artworks');
 
 function imageHash(raw) {
   // Sharp's grayscale Lanczos resampling is comparable to the Pillow
@@ -101,7 +100,6 @@ for (const [name, data] of imageSources) {
 }
 const covers = [
   {files:['en/math-with-rust-roamap-series.md','pt/matematica-com-rust-roadmap.md'],old:'/math-with-rust-series-cover.svg',name:'math-with-rust-roadmap.webp'},
-  {files:['en/math-with-rust-module-1.md','pt/matematica-com-rust-modulo-1.md'],old:'/math-with-rust-mod1-cover.svg',name:'math-with-rust-module-1.jpg'},
   {files:['en/math-with-rust-module-2.md','pt/matematica-com-rust-modulo-2.md'],old:'/math-with-rust-mod2-cover.svg',name:'math-with-rust-module-2.webp'},
   {files:['en/linux-terminal-basic.md','pt/basico-linux-terminal.md'],old:'/linux-terminal-grimoire-cover.svg',name:'linux-terminal-basic.webp'},
   {files:['en/control-flow-mathematical-algorithms.md','pt/controle-de-fluxo-e-algoritmos-matematicos.md'],old:'/algorithms-control-flow-cover.svg',name:'first-steps-control-flow.webp'},
@@ -179,4 +177,4 @@ test('article covers point to imported images rather than missing SVG placeholde
   .replace('__ASSETS__',JSON.stringify([...imageSources.keys()]))
   .replace('__ARTICLES__',JSON.stringify(covers.flatMap(x=>x.files)));
 await writeFile(join(root,'tests','article-images.test.mjs'),test);
-console.log('Imported all 14 images, updated 14 translated articles, restored 2 published EN manuscripts.');
+console.log('Imported 13 image matches, updated 12 existing translated articles, restored 2 published EN manuscripts; the Module 1 uploaded cover needs exact binary transfer.');
