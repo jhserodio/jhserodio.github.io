@@ -8,7 +8,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, follow" />
-    <title>João Henrique Serodio — Language / Idioma</title>
+    <title>João Henrique Serodio — Resume / Currículo</title>
     <script is:inline>
       (() => {
         const key = 'jhserodio:locale';
@@ -20,14 +20,14 @@
           if (primary === 'en' || primary === 'pt') { detected = primary; break; }
         }
         const locale = saved === 'en' || saved === 'pt' ? saved : detected;
-        window.location.replace('/' + locale + '/');
+        window.location.replace('/' + locale + '/resume/' + window.location.search + window.location.hash);
       })();
     </script>
   </head>
   <body>
     <main>
-      <p>Selecione o idioma / Select your language:</p>
-      <p><a href="/pt/">Português (Brasil)</a> · <a href="/en/">English (US)</a></p>
+      <p>Ir para o currículo / Go to résumé:</p>
+      <p><a href="/pt/resume/">Português (Brasil)</a> · <a href="/en/resume/">English (US)</a></p>
     </main>
   </body>
 </html>

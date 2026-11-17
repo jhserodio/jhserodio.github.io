@@ -25,11 +25,26 @@ const contacts = [
   { label: me.contact.linkedin.label, value: me.contact.linkedin.value, href: me.contact.linkedin.value, external: true },
   { label: me.contact.leetcode.label, value: me.contact.leetcode.value, href: me.contact.leetcode.value, external: true },
 ];
+const headerContacts = [
+  { label: 'LinkedIn', href: me.contact.linkedin.value, external: true },
+  { label: 'Email', href: `mailto:${me.contact.email.value}`, external: false },
+  { label: 'GitHub', href: me.contact.github.value, external: true },
+  { label: 'LeetCode', href: me.contact.leetcode.value, external: true },
+];
 ---
 <BaseLayout lang={lang} title={u.resumeTitle} description={resume.summary}>
   <article class="resume-page">
     <section class="resume-overview" aria-labelledby="resume-title">
-      <h1 id="resume-title">{u.resumeTitle}</h1>
+      <div class="resume-overview-heading">
+        <h1 id="resume-title">{u.resumeTitle}</h1>
+        <nav class="resume-quick-links" aria-label={lang === 'pt' ? 'Contatos e perfis profissionais' : 'Contact and professional profiles'}>
+          {headerContacts.map(({label, href, external}) => (
+            <a href={href} target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer me' : undefined}>
+              {label}
+            </a>
+          ))}
+        </nav>
+      </div>
       <h2 class="resume-subheading">{me.about.title}</h2>
       <p class="lead resume-summary">{resume.summary}</p>
     </section>

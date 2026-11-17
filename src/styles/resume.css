@@ -11,6 +11,19 @@
 .resume-page h3,
 .resume-page p { max-width: none; }
 .resume-overview { padding: .35rem clamp(.25rem, 1.5vw, 1rem) 1.5rem; border-bottom: 1px solid var(--line-soft); }
+.resume-overview-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: .65rem 1.5rem; margin-bottom: 1rem; }
+.resume-overview-heading h1 { margin: 0; }
+.resume-quick-links { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem .65rem; }
+.resume-quick-links a {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: .35rem .65rem; border: 1px solid var(--line-soft); border-radius: .45rem;
+  background: rgba(16,21,29,.35); color: var(--accent); text-decoration: none;
+  font-size: .82rem; font-weight: 600; line-height: 1.5;
+}
+.resume-quick-links a:hover, .resume-quick-links a:focus-visible {
+  border-color: var(--accent-soft); background: var(--panel-raised);
+  text-decoration: underline; text-underline-offset: .15em;
+}
 .resume-overview h1 { margin: 0 0 1rem; }
 .resume-page .resume-subheading {
   color: var(--accent-soft); font-size: 1.02rem; font-weight: 700;
@@ -117,6 +130,9 @@
 }
 @media (max-width: 47rem) {
   .resume-page { --resume-section-gap: 2rem; }
+  .resume-overview-heading { align-items: flex-start; }
+  .resume-quick-links { width: 100%; gap: .4rem; }
+  .resume-quick-links a { font-size: .8rem; padding: .35rem .55rem; }
   .resume-intro-grid, .resume-extra-grid { grid-template-columns: 1fr; }
   .resume-intro-panel + .resume-intro-panel,
   .resume-extra-panel + .resume-extra-panel { border-left: 0; border-top: 1px solid var(--line-soft); }
@@ -129,6 +145,7 @@
 }
 @media print {
   .resume-page { gap: 1rem; }
+  .resume-quick-links a { border: 0; padding: .15rem .35rem; }
   .resume-overview { padding: 0 0 .6rem; }
   .resume-summary, .resume-work-description p { line-height: 1.35; }
   .resume-intro-panel, .resume-extra-panel { padding: .7rem; }

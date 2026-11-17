@@ -1,4 +1,20 @@
 ---
-import Page from '../../templates/HomePage.astro';
+const target = '/pt/resume/';
 ---
-<Page lang="pt" />
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, follow" />
+    <meta http-equiv="refresh" content="0;url=/pt/resume/" />
+    <link rel="canonical" href={"https://serodio.dev" + target} />
+    <title>Redirecionando para o currículo</title>
+    <script is:inline>
+      window.location.replace(window.location.pathname.replace(/\/$/, '/resume/') + window.location.search + window.location.hash);
+    </script>
+  </head>
+  <body>
+    <p><a href={target}>Acessar currículo</a></p>
+  </body>
+</html>

@@ -13,18 +13,18 @@ function redirectFor(browserLanguages, saved = null, blockStorage = false) {
   const context = {
     navigator: { languages: browserLanguages, language: browserLanguages[0] },
     localStorage: { getItem() { if (blockStorage) throw new Error('Denied'); return saved; } },
-    window: { location: { replace(href) { visits.push(href); } } },
+    window: { location: { search: '', hash: '', replace(href) { visits.push(href); } } },
   };
   vm.runInNewContext(inlineScript, context, { timeout: 1000 });
   return visits;
 }
 
-test('navegador pt-BR abre /pt/', () => assert.deepEqual(redirectFor(['pt-BR', 'en-US']), ['/pt/']));
-test('navegador en-US abre /en/', () => assert.deepEqual(redirectFor(['en-US', 'pt-BR']), ['/en/']));
-test('navegador fr-FR cai no pt', () => assert.deepEqual(redirectFor(['fr-FR']), ['/pt/']));
-test('idioma secundário do navegador é usado', () => assert.deepEqual(redirectFor(['fr-FR', 'en-US']), ['/en/']));
-test('preferência salva prevalece sobre idioma do navegador', () => assert.deepEqual(redirectFor(['pt-BR'], 'en'), ['/en/']));
-test('armazenamento bloqueado usa o navegador', () => assert.deepEqual(redirectFor(['en-US'], null, true), ['/en/']));
+test('navegador pt-BR abre o currículo /pt/resume/', () => assert.deepEqual(redirectFor(['pt-BR', 'en-US']), ['/pt/resume/']));
+test('navegador en-US abre o currículo /en/resume/', () => assert.deepEqual(redirectFor(['en-US', 'pt-BR']), ['/en/resume/']));
+test('navegador fr-FR cai no pt', () => assert.deepEqual(redirectFor(['fr-FR']), ['/pt/resume/']));
+test('idioma secundário do navegador é usado', () => assert.deepEqual(redirectFor(['fr-FR', 'en-US']), ['/en/resume/']));
+test('preferência salva prevalece sobre idioma do navegador', () => assert.deepEqual(redirectFor(['pt-BR'], 'en'), ['/en/resume/']));
+test('armazenamento bloqueado usa o navegador', () => assert.deepEqual(redirectFor(['en-US'], null, true), ['/en/resume/']));
 
 const legacySource = readFileSync(new URL('../src/components/LegacyRedirect.astro', import.meta.url), 'utf8');
 const legacyScript = legacySource.match(/<script is:inline>([\s\S]*?)<\/script>/)?.[1];

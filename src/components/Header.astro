@@ -6,7 +6,6 @@ const { lang, switchUrl } = Astro.props;
 const u = t(lang);
 const nextLang = alternateLang(lang);
 const links = [
-  { label: u.nav.home, href: localePath(lang) },
   { label: u.nav.resume, href: localePath(lang, 'resume') },
   { label: u.nav.articles, href: localePath(lang, 'articles') },
   { label: u.nav.apps, href: localePath(lang, 'apps') },
@@ -17,11 +16,11 @@ const normalize = (value: string) => value.replace(/\/$/, '') || '/';
 <header class="site-header">
   <div class="site-banner" aria-hidden="true"></div>
   <div class="site-identity">
-    <a class="profile-photo" href={localePath(lang)} aria-label={u.nav.home}>
+    <a class="profile-photo" href={localePath(lang, 'resume')} aria-label={u.nav.resume}>
       <img src="/profile-portrait.webp" alt={lang === 'pt' ? 'Retrato de João Henrique Serodio segurando uma cuia de chimarrão' : 'Portrait of João Henrique Serodio holding a mate gourd'} width="720" height="720" decoding="async" fetchpriority="high" />
     </a>
     <div class="identity-meta">
-      <a class="brand" href={localePath(lang)}>João Henrique Serodio</a>
+      <a class="brand" href={localePath(lang, 'resume')}>João Henrique Serodio</a>
       <p class="identity-role">{lang === 'pt' ? 'Engenharia de Software · Matemática' : 'Software Engineering · Mathematics'}</p>
     </div>
   </div>
