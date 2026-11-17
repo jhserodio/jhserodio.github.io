@@ -29,7 +29,14 @@ const canonical = absolute(Astro.url.pathname);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Restore the original 2019 JS monogram and its complete favicon family. -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=js-original" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=js-original" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=js-original" />
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=js-original" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=js-original" />
+    <link rel="manifest" href="/site.webmanifest?v=js-original" />
+    <meta name="theme-color" content="#10151d" />
     <link rel="canonical" href={canonical} />
     {Object.entries(translated).map(([code, url]) =>
       url && <link rel="alternate" hreflang={code === 'pt' ? 'pt-BR' : 'en-US'} href={absolute(url)} />
