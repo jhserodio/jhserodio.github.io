@@ -5,6 +5,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { alternateLang, localePath, t } from '../i18n/utils';
 import type { Lang } from '../i18n/ui';
+import { share } from '../i18n/social';
 
 interface Props {
   lang: Lang;
@@ -21,6 +22,12 @@ const translated = alternates ?? { pt: localePath('pt', relative), en: localePat
 const site = Astro.site ?? new URL('https://serodio.dev');
 const absolute = (url: string) => new URL(url, site).toString();
 const canonical = absolute(Astro.url.pathname);
+const isResume = title === t(lang).resumeTitle;
+const pageTitle = isResume ? share[lang].title : `${title} | ${share.siteName}`;
+const pageDescription = isResume ? share[lang].description : description.trim().slice(0, 280);
+const socialImage = absolute(share.image);
+const ogLocale = lang === 'pt' ? 'pt_BR' : 'en_US';
+const otherOgLocale = lang === 'pt' ? 'en_US' : 'pt_BR';
 ---
 <!doctype html>
 <html lang={lang === 'pt' ? 'pt-BR' : 'en-US'}>
@@ -28,7 +35,7 @@ const canonical = absolute(Astro.url.pathname);
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
-    <meta name="description" content={description} />
+    <meta name="description" content={pageDescription} />
     <!-- Restore the original 2019 JS monogram and its complete favicon family. -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=js-original" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=js-original" />
@@ -43,10 +50,23 @@ const canonical = absolute(Astro.url.pathname);
     )}
     <link rel="alternate" type="application/rss+xml" title={t(lang).articlesTitle} href={localePath(lang, 'rss.xml')} />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content={share.siteName} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
     <meta property="og:url" content={canonical} />
-    <title>{title} | João Henrique Serodio</title>
+    <meta property="og:locale" content={ogLocale} />
+    <meta property="og:locale:alternate" content={otherOgLocale} />
+    <meta property="og:image" content={socialImage} />
+    <meta property="og:image:secure_url" content={socialImage} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content={String(share.width)} />
+    <meta property="og:image:height" content={String(share.height)} />
+    <meta property="og:image:alt" content="João Henrique Serodio — Software Engineer, Rust and Applied Mathematics" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+    <meta name="twitter:image" content={socialImage} />
+    <title>{pageTitle}</title>
   </head>
   <body>
     <a class="skip-link" href="#content">{lang === 'pt' ? 'Pular para conteúdo' : 'Skip to content'}</a>

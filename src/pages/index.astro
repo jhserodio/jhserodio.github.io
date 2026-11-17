@@ -1,14 +1,38 @@
 ---
-// O GitHub Pages é estático: a escolha inicial precisa acontecer no navegador.
-// Visitas a /pt/ ou /en/ nunca são sobrescritas pela detecção automática.
+// Static Open Graph preview for crawlers, while browsers retain locale detection.
+import { share } from '../i18n/social';
+const title = share.en.title;
+const description = share.en.description;
+const imageUrl = 'https://serodio.dev' + share.image;
 ---
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, follow" />
-    <title>João Henrique Serodio — Resume / Currículo</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href="https://serodio.dev/" />
+    <link rel="alternate" hreflang="pt-BR" href="https://serodio.dev/pt/resume/" />
+    <link rel="alternate" hreflang="en-US" href="https://serodio.dev/en/resume/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={share.siteName} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content="https://serodio.dev/" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="pt_BR" />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:secure_url" content={imageUrl} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content={String(share.width)} />
+    <meta property="og:image:height" content={String(share.height)} />
+    <meta property="og:image:alt" content="João Henrique Serodio — Software Engineer, Rust and Applied Mathematics" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageUrl} />
+    <title>{title}</title>
     <script is:inline>
       (() => {
         const key = 'jhserodio:locale';

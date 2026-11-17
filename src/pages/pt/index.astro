@@ -1,5 +1,9 @@
 ---
+import { share } from '../../i18n/social';
 const target = '/pt/resume/';
+const title = share.pt.title;
+const description = share.pt.description;
+const imageUrl = 'https://serodio.dev' + share.image;
 ---
 <!doctype html>
 <html lang="pt-BR">
@@ -7,9 +11,22 @@ const target = '/pt/resume/';
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, follow" />
+    <meta name="description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={share.siteName} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={"https://serodio.dev" + target} />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content={String(share.width)} />
+    <meta property="og:image:height" content={String(share.height)} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={imageUrl} />
     <meta http-equiv="refresh" content="0;url=/pt/resume/" />
     <link rel="canonical" href={"https://serodio.dev" + target} />
-    <title>Redirecionando para o currículo</title>
+    <title>{title}</title>
     <script is:inline>
       window.location.replace(window.location.pathname.replace(/\/$/, '/resume/') + window.location.search + window.location.hash);
     </script>

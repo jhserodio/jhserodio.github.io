@@ -31,6 +31,8 @@ jobs:
         run: npm run check
       - name: Build
         run: npm run build
+      - name: Verify generated Open Graph previews
+        run: node scripts/check-social-preview.mjs
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
