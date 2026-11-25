@@ -72,4 +72,5 @@ const copy = lang === 'pt' ? {
     </div>
   </div>
 </section>
-<script is:inline type="module" src="/cvrp-simulator.js"></script>
+<!-- Astro fingerprints the JS bundle on every build, avoiding stale cached controllers. -->
+<script>import '../client/cvrp-simulator.js';</script>

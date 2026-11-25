@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_INSTANCE, defaultInstance, sampleInstance } from '../public/cvrp-sample.mjs';
+import { DEFAULT_INSTANCE, defaultInstance, sampleInstance } from '../src/client/cvrp-sample.mjs';
 
 test('default fixture includes all six clients and complete directed matrix', () => {
   const i = defaultInstance();

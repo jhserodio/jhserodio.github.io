@@ -66,6 +66,9 @@ test('CVRP WASM app is active and backed by Rust in both languages', () => {
   assert.ok(existsSync(path.join(root, 'crates/cvrp-solver-wasm/src/lib.rs')));
   assert.match(read('src/templates/AppDetailPage.astro'), /CvrpSimulator/);
   assert.match(read('src/components/CvrpSimulator.astro'), /https:\/\/serodio\.dev\/en\/apps\//);
+  assert.match(read('src/components/CvrpSimulator.astro'), /import '\.\.\/client\/cvrp-simulator\.js'/);
+  assert.doesNotMatch(read('src/components/CvrpSimulator.astro'), /src="\/cvrp-simulator\.js"/);
+  assert.ok(existsSync(path.join(root, 'src/client/cvrp-simulator.js')));
   assert.match(read('public/cvrp-worker.js'), /cvrp_solver_wasm/);
 });
 

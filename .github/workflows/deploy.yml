@@ -29,7 +29,9 @@ jobs:
         run: npm test
       - name: Check CVRP browser scripts
         run: |
-          node --check public/cvrp-simulator.js
+          node --check src/client/cvrp-simulator.js
+          node --check src/client/cvrp-session.mjs
+          node --check src/client/cvrp-sample.mjs
           node --check public/cvrp-worker.js
       - name: Typecheck
         run: npm run check

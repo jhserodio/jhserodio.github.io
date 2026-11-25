@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createCvrpSession } from '../public/cvrp-session.mjs';
+import { createCvrpSession } from '../src/client/cvrp-session.mjs';
 
 function fixture() {
   const workers = [], phases = [], results = [], errors = [];
