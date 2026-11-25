@@ -1,4 +1,4 @@
-import { CVRP_LIMITS, defaultInstance, sampleInstance } from './cvrp-sample.mjs';
+import { CVRP_LIMITS, defaultInstance, sampleInstance, sampleFeasibilityBarrier } from './cvrp-sample.mjs';
 import { createCvrpSession } from './cvrp-session.mjs';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -174,6 +174,7 @@ document.querySelectorAll('[data-cvrp-root]').forEach((root) => {
   }
   let lastValidInstance = null;
   let parametersValid = false;
+  let sourceIsSynthetic = true;
 
   function setLocked(busy) {
     root.setAttribute('aria-busy', String(busy));
@@ -223,9 +224,38 @@ document.querySelectorAll('[data-cvrp-root]').forEach((root) => {
       if (output.status === 'error') {
         statusMessage(output.message || 'WASM error', true);
       } else if (output.status === 'infeasible') {
-        statusMessage(pt ? 'Não existe solução viável para estes parâmetros.' :
-          'No feasible solution exists for these parameters.');
+        const barrier = sourceIsSynthetic ? sampleFeasibilityBarrier({
+          n: instance.demands.length,
+          q: instance.vehicle_capacity,
+          k: instance.max_vehicles,
+          l: instance.max_route_distance,
+        }) : null;
+        const details = barrier === 'capacity'
+          ? (pt ? 'Mesmo com demanda mínima de 1, a frota não tem capacidade suficiente. Aumente Q ou K.'
+            : 'Even with minimum demand 1, the fleet cannot carry every customer. Increase Q or K.')
+          : barrier === 'distance' || barrier === 'route-distance'
+          ? (pt ? 'O limite de percurso impede atender todos os clientes. Aumente L ou K.'
+            : 'The route distance limit prevents visiting every customer. Increase L or K.')
+          : (pt ? 'As restrições de capacidade, frota ou distância impedem o atendimento.'
+            : 'Capacity, fleet size or route distances prevent full service.');
+        statusMessage(pt
+          ? 'Instância inviável — nenhuma rota foi gerada.'
+          : 'Infeasible instance — no routes were generated.', !barrier && sourceIsSynthetic);
+        if (!barrier && sourceIsSynthetic) {
+          appendText(results, 'p', pt
+            ? 'Erro de consistência: a instância fictícia foi construída para ser viável, mas o solver retornou inviabilidade.'
+            : 'Consistency error: the synthetic instance was constructed to be feasible, but the solver returned infeasibility.', 'cvrp-infeasible');
+        } else {
+          appendText(results, 'p', details, 'cvrp-infeasible');
+        }
       } else if (output.status === 'optimal') {
+        if (!output.routes.length || !output.routes.every(route =>
+          Array.isArray(route.stops) && route.stops.length >= 3)) {
+          statusMessage(pt
+            ? 'Resposta inconsistente: solução sem rotas.'
+            : 'Inconsistent response: optimum without routes.', true);
+          return;
+        }
         statusMessage(pt ? 'Solução ótima encontrada pelo Rust.' : 'Optimal solution found by Rust.');
         appendText(results, 'p',
           (pt ? 'Distância total ótima: ' : 'Optimal total distance: ') +
@@ -262,6 +292,7 @@ document.querySelectorAll('[data-cvrp-root]').forEach((root) => {
       const instance = sampleFromControls();
       validateInstance(instance);
       lastValidInstance = instance;
+      sourceIsSynthetic = true;
       textarea.value = JSON.stringify(instance, null, 2);
       parametersValid = true;
       showUnsolved(instance);
@@ -287,6 +318,7 @@ document.querySelectorAll('[data-cvrp-root]').forEach((root) => {
       validateInstance(instance);
       lastValidInstance = instance;
       parametersValid = true;
+      sourceIsSynthetic = false;
       showUnsolved(instance);
       statusMessage(pt
         ? 'JSON atualizado. Clique em Resolver para calcular as rotas.'

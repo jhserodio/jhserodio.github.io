@@ -44,3 +44,5 @@
 body.cvrp-solving { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) { .cvrp-spinner { animation-duration: 2.5s; } }
 
+
+.cvrp-infeasible { padding: .85rem 1rem; border: 1px solid #996c53; border-radius: .6rem; background: rgba(153,108,83,.12); color: var(--text); line-height: 1.55; }

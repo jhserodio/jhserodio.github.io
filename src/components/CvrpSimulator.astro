@@ -14,7 +14,7 @@ const copy = lang === 'pt' ? {
   hint: 'Alterar qualquer parâmetro atualiza o JSON e remove a solução, mantendo apenas os nós. Clique em Resolver para calcular as rotas. O JSON também pode ser editado diretamente.',
   graph: 'Grafo da solução', result: 'Resultado da otimização',
   waiting: 'Execute o solver para visualizar as rotas.', source: 'Ver código Rust',
-  back: 'Voltar aos apps', caution: 'A busca é exata e exponencial; instâncias maiores podem levar mais tempo.',
+  back: 'Voltar aos apps', caution: 'Os exemplos são gerados para ter rotas viáveis quando os limites Q, K e L permitem. A busca é exata e exponencial.',
 } : {
   title: 'CVRP Simulator · Rust + WebAssembly',
   intro: 'Change the parameters to update the instance and the graph without routes. Click Resolve to run the Rust solver in your browser.',
@@ -26,7 +26,7 @@ const copy = lang === 'pt' ? {
   hint: 'Changing any parameter updates the JSON and removes the solution, leaving only nodes. Click Resolve to compute the routes. You may also edit the JSON directly.',
   graph: 'Solution graph', result: 'Optimization results',
   waiting: 'Run the solver to display routes.', source: 'View Rust source',
-  back: 'Back to Apps', caution: 'Exact search scales exponentially. Larger instances may take longer.',
+  back: 'Back to Apps', caution: 'Samples are generated to have feasible routes whenever Q, K and L allow them. Exact search scales exponentially.',
 };
 ---
 <section class="cvrp-simulator" data-cvrp-root data-lang={lang}>
