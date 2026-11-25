@@ -54,3 +54,8 @@ jobs:
           test -s dist/wasm/cvrp-solver/cvrp_solver_wasm.js
       - name: Smoke-test compiled Rust/WASM solver
         run: node scripts/check-cvrp-wasm.mjs
+      - name: Browser interaction and cross-order tests (Chromium)
+        run: |
+          npm install --no-save --no-audit --no-fund @playwright/test@1.56.1
+          npx playwright install --with-deps chromium
+          npx playwright test --config=playwright.config.mjs
