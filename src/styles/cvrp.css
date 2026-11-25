@@ -43,3 +43,6 @@
 @keyframes cvrp-spin { to { transform: rotate(360deg); } }
 body.cvrp-solving { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) { .cvrp-spinner { animation-duration: 2.5s; } }
+
+.cvrp-pending { margin: .75rem 0 0; font-size: .87rem; color: var(--accent-soft); }
+.cvrp-pending[hidden] { display: none !important; }

@@ -1,7 +1,7 @@
 /**
  * Transactional worker lifecycle for the CVRP browser app.
  * A result is accepted only from the currently active worker and request id.
- * Every edit/generation/cancellation invalidates the previous solution.
+ * Explicit generation, cancellation and new runs invalidate stale worker replies.
  */
 export function createCvrpSession({ createWorker, onState, onResult, onError }) {
   let active = null;

@@ -138,17 +138,18 @@ document.querySelectorAll('[data-cvrp-root]').forEach((root) => {
   const regenerateButton = root.querySelector('[data-cvrp-generate]');
   const overlay = root.querySelector('[data-cvrp-overlay]');
   const cancelButton = overlay?.querySelector('[data-cvrp-cancel]');
+  const pendingNotice = root.querySelector('[data-cvrp-pending]');
   const getInput = key => root.querySelector('[data-cvrp-' + key + ']');
 
   if (!form || !textarea || !svg || !status || !results ||
-    !runButton || !regenerateButton || !overlay || !cancelButton) return;
+    !runButton || !regenerateButton || !overlay || !cancelButton || !pendingNotice) return;
 
   // Move the modal to <body> so its fixed positioning is never clipped
   // by the translucent, backdrop-filtered portfolio shell.
   document.body.append(overlay);
   const controls = ['n', 'q', 'k', 'l', 'seed'].map(getInput);
   const lockedControls = [...controls, textarea, runButton, regenerateButton];
-  let hasRequestedSolution = false;
+  let parametersPending = false;
   let lastInstance = null;
 
   function setLocked(busy) {
@@ -156,6 +157,8 @@ document.querySelectorAll('[data-cvrp-root]').forEach((root) => {
     root.setAttribute('aria-busy', String(busy));
     document.body.classList.toggle('cvrp-solving', busy);
     lockedControls.forEach(input => { input.disabled = busy; });
+    // Parameter edits are staged: Generate is required before Solve.
+    runButton.disabled = busy || parametersPending;
     cancelButton.disabled = !busy;
   }
 
@@ -218,14 +221,26 @@ document.querySelectorAll('[data-cvrp-root]').forEach((root) => {
     return standard ? defaultInstance() : sampleInstance({ n, q, k, l, seed });
   }
 
-  function solveCurrent(instance = null) {
+  function markParametersPending() {
+    // Never modify an existing answer or its JSON just because a field changed.
+    if (session.getSnapshot().busy) return;
+    parametersPending = true;
+    pendingNotice.hidden = false;
+    pendingNotice.textContent = pt
+      ? 'Parâmetros alterados. Clique em Gerar para preparar a nova instância; depois, em Resolver.'
+      : 'Parameters changed. Click Generate to prepare the new instance, then Solve.';
+    runButton.disabled = true;
+  }
+
+  function solveCurrent() {
+    if (parametersPending || session.getSnapshot().busy) return;
     try {
-      // The JSON is the single source of truth at submission time.
-      const input = instance ?? JSON.parse(textarea.value);
+      // Only the current JSON is submitted, never ungenerated input fields.
+      const input = JSON.parse(textarea.value);
       validateInstance(input);
       lastInstance = input;
-      hasRequestedSolution = true;
       clearSolution(input);
+      pendingNotice.hidden = true;
       statusMessage(pt ? 'Executando solver Rust/WASM…' : 'Running Rust/WASM solver…');
       session.start(input);
     } catch (error) {
@@ -235,8 +250,10 @@ document.querySelectorAll('[data-cvrp-root]').forEach((root) => {
     }
   }
 
-  function regenerate(autoSolve = hasRequestedSolution) {
-    // Stop previous work before modifying JSON and rendering.
+  function regenerate() {
+    // Generate is the explicit commit point for edited form parameters.
+    // It invalidates any previous computation and removes its old solution,
+    // but NEVER runs the solver. Only Solve starts a worker.
     session.invalidate();
     clearSolution();
     try {
@@ -244,38 +261,38 @@ document.querySelectorAll('[data-cvrp-root]').forEach((root) => {
       lastInstance = instance;
       textarea.value = JSON.stringify(instance, null, 2);
       clearSolution(instance);
-      statusMessage(pt ? 'Parâmetros atualizados.' : 'Parameters updated.');
-      if (autoSolve) solveCurrent(instance);
+      parametersPending = false;
+      pendingNotice.hidden = true;
+      runButton.disabled = false;
+      statusMessage(pt
+        ? 'Instância gerada. Clique em Resolver para calcular as rotas.'
+        : 'Instance generated. Click Solve to compute the routes.');
     } catch (error) {
       lastInstance = null;
-      // Never leave stale JSON available for accidental re-submission.
       textarea.value = '';
-      clearSolution();
+      parametersPending = true;
+      pendingNotice.hidden = true;
+      runButton.disabled = true;
       statusMessage((pt ? 'Parâmetros inválidos: ' : 'Invalid parameters: ') +
         String(error), true);
     }
   }
 
-  // Invalidate the previous solution as soon as a field is edited.
-  // 'change' commits an edited number and reruns the solver if it ran before.
   for (const input of controls) {
-    input.addEventListener('input', () => {
-      session.invalidate();
-      clearSolution(lastInstance);
-      statusMessage(pt ? 'Parâmetros modificados.' : 'Parameters changed.');
-    });
-    input.addEventListener('change', () => regenerate());
+    input.addEventListener('input', markParametersPending);
+    input.addEventListener('change', markParametersPending);
   }
 
-  regenerateButton.addEventListener('click', () => regenerate());
+  regenerateButton.addEventListener('click', regenerate);
 
+  // Manual JSON edits also leave the visible result intact until Solve.
+  // They do not apply staged changes to the form controls.
   textarea.addEventListener('input', () => {
-    session.invalidate();
-    clearSolution();
-    lastInstance = null;
-    statusMessage(pt
-      ? 'JSON modificado. Execute novamente para resolver esta entrada.'
-      : 'JSON changed. Run the solver to resolve this input.');
+    if (session.getSnapshot().busy || parametersPending) return;
+    pendingNotice.hidden = false;
+    pendingNotice.textContent = pt
+      ? 'JSON editado. Clique em Resolver para calcular essa instância.'
+      : 'JSON edited. Click Solve to compute this instance.';
   });
 
   cancelButton.addEventListener('click', () => {
@@ -287,9 +304,9 @@ document.querySelectorAll('[data-cvrp-root]').forEach((root) => {
   form.addEventListener('submit', event => {
     event.preventDefault();
     // Ignore any synthetic duplicate submit while the loading overlay is active.
-    if (session.getSnapshot().busy) return;
+    if (session.getSnapshot().busy || parametersPending) return;
     solveCurrent();
   });
 
-  regenerate(false);
+  regenerate();
 });

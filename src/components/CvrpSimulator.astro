@@ -11,7 +11,7 @@ const copy = lang === 'pt' ? {
   distance: 'Distância máxima por rota (L)', seed: 'Semente aleatória',
   generate: 'Gerar instância fictícia', run: 'Resolver com Rust/WASM',
   cancel: 'Cancelar execução', json: 'Instância JSON editável',
-  hint: 'Alterar os parâmetros regenera o JSON. Depois você pode editar demandas ou distâncias manualmente. O depósito tem índice zero.',
+  hint: 'Altere os parâmetros, clique em Gerar e depois em Resolver. A solução anterior permanece visível até gerar outra instância. Você também pode editar o JSON manualmente.',
   graph: 'Grafo da solução', result: 'Resultado da otimização',
   waiting: 'Execute o solver para visualizar as rotas.', source: 'Ver código Rust',
   back: 'Voltar aos apps', caution: 'A busca é exata e exponencial; instâncias maiores podem levar mais tempo.',
@@ -23,7 +23,7 @@ const copy = lang === 'pt' ? {
   distance: 'Maximum route distance (L)', seed: 'Random seed',
   generate: 'Generate sample instance', run: 'Solve with Rust/WASM',
   cancel: 'Cancel computation', json: 'Editable JSON instance',
-  hint: 'Changing a parameter regenerates the JSON. You can then edit demands or distances by hand. The depot has index zero.',
+  hint: 'Change parameters, click Generate, then click Solve. The previous answer remains visible until you generate a new instance. You can also edit the JSON directly.',
   graph: 'Solution graph', result: 'Optimization results',
   waiting: 'Run the solver to display routes.', source: 'View Rust source',
   back: 'Back to Apps', caution: 'Exact search scales exponentially. Larger instances may take longer.',
@@ -46,6 +46,7 @@ const copy = lang === 'pt' ? {
         <button type="button" data-cvrp-generate>{copy.generate}</button>
         <button type="submit" class="cvrp-primary" data-cvrp-run>{copy.run}</button>
       </div>
+      <p class="cvrp-pending" data-cvrp-pending hidden></p>
       <p class="cvrp-small">{copy.caution}</p>
     </section>
     <section class="cvrp-panel">
