@@ -533,3 +533,63 @@ test('SVG graph inherits the portfolio palette and renders every route edge as d
   expect(after.length).toBeGreaterThan(0);
   expect(after.every(pattern => pattern === '10 8')).toBe(true);
 });
+
+
+test('curved graph keeps compact nodes, thin borders, dash width and separated labels after re-solving', async ({ page }) => {
+  await page.goto(route('en'));
+  await page.locator(resolve).click();
+  await finished(page);
+
+  for (const [name, value] of [['n', 8], ['n', 12], ['seed', 42]]) {
+    await changeNumber(page, name, value);
+    await unsolved(page, Number(await page.locator(inputs.n).inputValue()) + 1);
+    await page.locator(resolve).click();
+    await finished(page);
+
+    const visual = await page.locator(graph).evaluate(svg => {
+      const styles = selector => [...svg.querySelectorAll(selector)].map(el => getComputedStyle(el));
+      const nodes = [...svg.querySelectorAll('circle.cvrp-graph-node')];
+      const paths = [...svg.querySelectorAll('path.cvrp-graph-edge')];
+      const diamonds = [...svg.querySelectorAll('polygon.cvrp-graph-weight')];
+      const demands = [...svg.querySelectorAll('text.cvrp-graph-demand')];
+      const intersect = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x &&
+        a.y < b.y + b.height && a.y + a.height > b.y;
+      const overlapCount = elements => {
+        let count = 0;
+        for (let i = 0; i < elements.length; i++) {
+          const rectA = elements[i].getBBox();
+          for (let j = i + 1; j < elements.length; j++) {
+            if (intersect(rectA, elements[j].getBBox())) count++;
+          }
+        }
+        return count;
+      };
+      return {
+        customers: nodes.length - 1,
+        paths: paths.length,
+        weights: diamonds.length,
+        labels: demands.length,
+        nodeStrokeWidths: styles('circle.cvrp-graph-node').map(s => s.strokeWidth),
+        diamondStrokeWidths: styles('polygon.cvrp-graph-weight').map(s => s.strokeWidth),
+        routeStrokeWidths: styles('path.cvrp-graph-edge').map(s => s.strokeWidth),
+        d: paths.map(path => path.getAttribute('d')),
+        diamondOverlaps: overlapCount(diamonds),
+        demandOverlaps: overlapCount(demands),
+        labelDiamondOverlaps: demands.reduce((count, demand) =>
+          count + diamonds.filter(diamond => intersect(demand.getBBox(), diamond.getBBox())).length, 0),
+      };
+    });
+
+    expect(visual.customers).toBe(Number(await page.locator(inputs.n).inputValue()));
+    expect(visual.paths).toBeGreaterThan(0);
+    expect(visual.weights).toBe(visual.paths);
+    expect(visual.labels).toBe(visual.customers);
+    expect(visual.nodeStrokeWidths.every(width => width === '1px')).toBe(true);
+    expect(visual.diamondStrokeWidths.every(width => width === '1px')).toBe(true);
+    expect(visual.routeStrokeWidths.every(width => width === '2px')).toBe(true);
+    expect(visual.d.every(d => d.includes(' Q '))).toBe(true);
+    expect(visual.diamondOverlaps).toBe(0);
+    expect(visual.demandOverlaps).toBe(0);
+    expect(visual.labelDiamondOverlaps).toBe(0);
+  }
+});
