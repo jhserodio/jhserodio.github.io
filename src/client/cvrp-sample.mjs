@@ -41,6 +41,23 @@ function integer(value, lower, upper, name) {
 }
 
 // Reproducible integer generator. Distances are synthetic, not road distances.
+/**
+ * Necessary and sufficient conditions for the SYNTHETIC instance constructor
+ * below to provide a witness when demands >= 1 and all arcs >= 1.
+ * This is not a proof of infeasibility for arbitrary user-entered matrices,
+ * which may legally contain zero-cost arcs.
+ */
+export function sampleFeasibilityBarrier({ n, q, k, l }) {
+  if (l < 2) return 'distance';
+  if (n > q * k) return 'capacity';
+  if (n > k * (l - 1)) return 'route-distance';
+  return null;
+}
+
+// Deterministic synthetic generator with a CONSTRUCTIVE feasible witness.
+// When the parameters can accommodate positive demands and distances, all
+// generated sample routes are guaranteed to satisfy Q, K and L. The optimizer
+// still computes the optimum; the witness is only used to build test data.
 export function sampleInstance({ n, q, k, l, seed }) {
   integer(n, CVRP_LIMITS.customers.min, CVRP_LIMITS.customers.max, 'n');
   integer(q, CVRP_LIMITS.vehicle_capacity.min, CVRP_LIMITS.vehicle_capacity.max, 'Q');
@@ -53,8 +70,23 @@ export function sampleInstance({ n, q, k, l, seed }) {
     state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
     return state / 4294967296;
   };
-  const demands = Array.from({ length: n }, () =>
-    1 + Math.floor(next() * Math.min(q, 4)));
+
+  const feasible = sampleFeasibilityBarrier({ n, q, k, l }) === null;
+  const groups = Array.from({ length: k }, () => []);
+  for (let i = 0; i < n; i++) groups[i % k].push(i + 1);
+
+  const demands = Array(n).fill(1);
+  if (feasible) {
+    for (const group of groups) {
+      // At least one unit per customer; allocate extras without exceeding Q.
+      let spare = q - group.length;
+      for (const customer of group) {
+        const extra = Math.floor(next() * (Math.min(spare, 3) + 1));
+        demands[customer - 1] += extra;
+        spare -= extra;
+      }
+    }
+  }
 
   const points = [{ x: 0, y: 0 }];
   for (let i = 0; i < n; i++) {
@@ -63,9 +95,42 @@ export function sampleInstance({ n, q, k, l, seed }) {
     points.push({ x: radius * Math.cos(angle), y: radius * Math.sin(angle) });
   }
 
-  const distances = points.map((a, i) =>
+  const raw = points.map((a, i) =>
     points.map((b, j) => i === j ? 0 :
       Math.max(1, Math.round(Math.hypot(a.x - b.x, a.y - b.y) * 1.3))));
+
+  // A group's witness route is 0 -> customers in group order -> 0.
+  const routeLength = (group, factor) => {
+    let previous = 0, total = 0;
+    for (const customer of [...group, 0]) {
+      if (customer !== previous) {
+        total += Math.max(1, Math.floor(raw[previous][customer] * factor));
+      }
+      previous = customer;
+    }
+    return total;
+  };
+
+  let factor = 1;
+  if (feasible && groups.some(group => routeLength(group, factor) > l)) {
+    // Factor zero yields 1 per arc. For feasible constraints, even the
+    // largest group has at most L-1 customers, so a feasible factor exists.
+    let lower = 0, upper = 1;
+    for (let iter = 0; iter < 40; iter++) {
+      const middle = (lower + upper) / 2;
+      if (groups.every(group => routeLength(group, middle) <= l)) {
+        lower = middle;
+      } else {
+        upper = middle;
+      }
+    }
+    factor = lower;
+  }
+
+  const distances = raw.map((row, i) =>
+    row.map((distance, j) =>
+      i === j ? 0 : Math.max(1, Math.floor(distance * factor))));
+
   return {
     demands,
     distances,
