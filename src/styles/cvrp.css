@@ -25,3 +25,21 @@
 .cvrp-total { font-size:1.1rem; color:var(--text); }
 @media (max-width:55rem) { .cvrp-form { grid-template-columns:1fr; } }
 @media (max-width:32rem) { .cvrp-controls { grid-template-columns:1fr; } .cvrp-panel { padding:.8rem; } }
+
+/* Modal is moved to document.body to avoid clipping inside the glass shell. */
+.cvrp-overlay[hidden] { display: none !important; }
+.cvrp-overlay { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center;
+  padding: 1rem; background: rgba(9,16,25,.82); backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px); }
+.cvrp-overlay-content { width: min(100%,26rem); padding: 2rem 1.5rem; border-radius: 1rem;
+  border: 1px solid var(--accent-soft); background: var(--panel); color: var(--text);
+  box-shadow: 0 12px 60px rgba(0,0,0,.45); text-align: center; }
+.cvrp-overlay-content h3 { margin: .85rem 0 .5rem; color: var(--accent); }
+.cvrp-overlay-content p { color: var(--muted); }
+.cvrp-overlay-content button { margin-top: .5rem; min-width: 10rem; }
+.cvrp-spinner { display: block; margin: 0 auto; width: 3.2rem; height: 3.2rem;
+  border: 4px solid var(--line); border-top-color: var(--accent); border-radius: 50%;
+  animation: cvrp-spin .85s linear infinite; }
+@keyframes cvrp-spin { to { transform: rotate(360deg); } }
+body.cvrp-solving { overflow: hidden; }
+@media (prefers-reduced-motion: reduce) { .cvrp-spinner { animation-duration: 2.5s; } }

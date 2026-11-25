@@ -1,4 +1,5 @@
 import { defaultInstance, sampleInstance } from '/cvrp-sample.mjs';
+import { createCvrpSession } from '/cvrp-session.mjs';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const COLORS = ['#8fc9ff', '#3bc9a5', '#f59e67', '#b39bff', '#e5ba55', '#f08cb3'];
@@ -134,111 +135,60 @@ document.querySelectorAll('[data-cvrp-root]').forEach((root) => {
   const status = root.querySelector('[data-cvrp-status]');
   const results = root.querySelector('[data-cvrp-results]');
   const runButton = root.querySelector('[data-cvrp-run]');
-  const cancelButton = root.querySelector('[data-cvrp-cancel]');
   const regenerateButton = root.querySelector('[data-cvrp-generate]');
+  const overlay = root.querySelector('[data-cvrp-overlay]');
+  const cancelButton = overlay?.querySelector('[data-cvrp-cancel]');
   const getInput = key => root.querySelector('[data-cvrp-' + key + ']');
-  if (!form || !textarea || !svg || !status || !results || !runButton || !cancelButton) return;
 
-  let activeWorker = null;
-  let nextId = 0;
+  if (!form || !textarea || !svg || !status || !results ||
+    !runButton || !regenerateButton || !overlay || !cancelButton) return;
+
+  // Move the modal to <body> so its fixed positioning is never clipped
+  // by the translucent, backdrop-filtered portfolio shell.
+  document.body.append(overlay);
+  const controls = ['n', 'q', 'k', 'l', 'seed'].map(getInput);
+  const lockedControls = [...controls, textarea, runButton, regenerateButton];
+  let hasRequestedSolution = false;
+  let lastInstance = null;
+
+  function setLocked(busy) {
+    overlay.hidden = !busy;
+    root.setAttribute('aria-busy', String(busy));
+    document.body.classList.toggle('cvrp-solving', busy);
+    lockedControls.forEach(input => { input.disabled = busy; });
+    cancelButton.disabled = !busy;
+  }
 
   function statusMessage(message, isError = false) {
     status.textContent = message;
     status.classList.toggle('cvrp-status-error', isError);
   }
 
-  function finishWorker() {
-    if (activeWorker) activeWorker.terminate();
-    activeWorker = null;
-    runButton.disabled = false;
-    cancelButton.disabled = true;
-  }
-
-  function createSample() {
-    const n = Number(getInput('n').value);
-    const q = Number(getInput('q').value);
-    const k = Number(getInput('k').value);
-    const l = Number(getInput('l').value);
-    const seed = Number(getInput('seed').value);
-    const standard = n === 6 && q === 7 && k === 3 && l === 18 && seed === 7;
-    return standard ? defaultInstance() : sampleInstance({ n, q, k, l, seed });
-  }
-
-  function regenerate() {
-    if (activeWorker) finishWorker();
-    try {
-      const instance = createSample();
-      textarea.value = JSON.stringify(instance, null, 2);
-      results.replaceChildren();
-      drawGraph(svg, instance);
-      statusMessage(pt ? 'Instância gerada. Execute o solver para obter as rotas.' :
-        'Instance generated. Run the solver to compute routes.');
-    } catch (error) {
-      statusMessage(String(error), true);
-    }
-  }
-
-  for (const name of ['n', 'q', 'k', 'l', 'seed']) {
-    getInput(name)?.addEventListener('change', regenerate);
-  }
-  regenerateButton?.addEventListener('click', regenerate);
-
-  cancelButton.addEventListener('click', () => {
-    finishWorker();
-    statusMessage(pt ? 'Execução cancelada.' : 'Computation cancelled.');
-  });
-
-  form.addEventListener('submit', (event) => {
-    event.preventDefault();
-    if (activeWorker) finishWorker();
-    let instance;
-    try {
-      instance = JSON.parse(textarea.value);
-      validateInstance(instance);
-    } catch (error) {
-      statusMessage(pt ? 'Entrada inválida: ' + String(error) : 'Invalid input: ' + String(error), true);
-      return;
-    }
-
+  function clearSolution(instance = null) {
     results.replaceChildren();
-    drawGraph(svg, instance);
-    statusMessage(pt ? 'Executando solver Rust/WASM…' : 'Running Rust/WASM solver…');
-    runButton.disabled = true;
-    cancelButton.disabled = false;
-    const id = ++nextId;
-    let worker;
-    try {
-      worker = new Worker('/cvrp-worker.js', { type: 'module' });
-      activeWorker = worker;
-    } catch (error) {
-      finishWorker();
-      statusMessage(String(error), true);
-      return;
-    }
+    if (instance) drawGraph(svg, instance);
+    else svg.replaceChildren();
+  }
 
-    worker.onerror = (error) => {
-      if (activeWorker !== worker) return;
-      finishWorker();
-      statusMessage(pt ? 'Falha ao carregar o solver WASM: ' + error.message :
-        'Could not load WASM solver: ' + error.message, true);
-    };
-    worker.onmessage = (message) => {
-      if (activeWorker !== worker || message.data.id !== id) return;
-      finishWorker();
-
-      if (message.data.error) {
-        statusMessage(message.data.error, true);
+  const session = createCvrpSession({
+    createWorker: () => new Worker('/cvrp-worker.js', { type: 'module' }),
+    onState: ({ phase }) => setLocked(phase === 'solving'),
+    onError: message => statusMessage(
+      (pt ? 'Falha ao executar o WASM: ' : 'WASM execution failed: ') + message, true),
+    onResult: (output, instance) => {
+      if (!output || !Array.isArray(output.routes)) {
+        statusMessage(pt ? 'Resposta inválida do solver.' : 'Invalid solver response.', true);
         return;
       }
-      const output = message.data.result;
       if (output.status === 'error') {
-        statusMessage(output.message, true);
+        statusMessage(output.message || 'WASM error', true);
       } else if (output.status === 'infeasible') {
         statusMessage(pt ? 'Não existe solução viável para estes parâmetros.' :
           'No feasible solution exists for these parameters.');
       } else if (output.status === 'optimal') {
         statusMessage(pt ? 'Solução ótima encontrada pelo Rust.' : 'Optimal solution found by Rust.');
-        appendText(results, 'p', (pt ? 'Distância total ótima: ' : 'Optimal total distance: ') +
+        appendText(results, 'p',
+          (pt ? 'Distância total ótima: ' : 'Optimal total distance: ') +
           output.total_distance, 'cvrp-total');
         appendText(results, 'p', (pt ? 'Rotas utilizadas: ' : 'Vehicles used: ') +
           output.routes.length);
@@ -259,9 +209,87 @@ document.querySelectorAll('[data-cvrp-root]').forEach((root) => {
       } else {
         statusMessage(pt ? 'Resposta inesperada do solver.' : 'Unexpected solver response.', true);
       }
-    };
-    worker.postMessage({ id, instance });
+    },
   });
 
-  regenerate();
+  function createSample() {
+    const [n, q, k, l, seed] = controls.map(input => Number(input.value));
+    const standard = n === 6 && q === 7 && k === 3 && l === 18 && seed === 7;
+    return standard ? defaultInstance() : sampleInstance({ n, q, k, l, seed });
+  }
+
+  function solveCurrent(instance = null) {
+    try {
+      // The JSON is the single source of truth at submission time.
+      const input = instance ?? JSON.parse(textarea.value);
+      validateInstance(input);
+      lastInstance = input;
+      hasRequestedSolution = true;
+      clearSolution(input);
+      statusMessage(pt ? 'Executando solver Rust/WASM…' : 'Running Rust/WASM solver…');
+      session.start(input);
+    } catch (error) {
+      session.invalidate();
+      clearSolution();
+      statusMessage((pt ? 'Entrada inválida: ' : 'Invalid input: ') + String(error), true);
+    }
+  }
+
+  function regenerate(autoSolve = hasRequestedSolution) {
+    // Stop previous work before modifying JSON and rendering.
+    session.invalidate();
+    clearSolution();
+    try {
+      const instance = createSample();
+      lastInstance = instance;
+      textarea.value = JSON.stringify(instance, null, 2);
+      clearSolution(instance);
+      statusMessage(pt ? 'Parâmetros atualizados.' : 'Parameters updated.');
+      if (autoSolve) solveCurrent(instance);
+    } catch (error) {
+      lastInstance = null;
+      // Never leave stale JSON available for accidental re-submission.
+      textarea.value = '';
+      clearSolution();
+      statusMessage((pt ? 'Parâmetros inválidos: ' : 'Invalid parameters: ') +
+        String(error), true);
+    }
+  }
+
+  // Invalidate the previous solution as soon as a field is edited.
+  // 'change' commits an edited number and reruns the solver if it ran before.
+  for (const input of controls) {
+    input.addEventListener('input', () => {
+      session.invalidate();
+      clearSolution(lastInstance);
+      statusMessage(pt ? 'Parâmetros modificados.' : 'Parameters changed.');
+    });
+    input.addEventListener('change', () => regenerate());
+  }
+
+  regenerateButton.addEventListener('click', () => regenerate());
+
+  textarea.addEventListener('input', () => {
+    session.invalidate();
+    clearSolution();
+    lastInstance = null;
+    statusMessage(pt
+      ? 'JSON modificado. Execute novamente para resolver esta entrada.'
+      : 'JSON changed. Run the solver to resolve this input.');
+  });
+
+  cancelButton.addEventListener('click', () => {
+    if (!session.cancel()) return;
+    clearSolution(lastInstance);
+    statusMessage(pt ? 'Execução cancelada.' : 'Computation cancelled.');
+  });
+
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    // Ignore any synthetic duplicate submit while the loading overlay is active.
+    if (session.getSnapshot().busy) return;
+    solveCurrent();
+  });
+
+  regenerate(false);
 });

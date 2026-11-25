@@ -45,7 +45,6 @@ const copy = lang === 'pt' ? {
       <div class="cvrp-actions">
         <button type="button" data-cvrp-generate>{copy.generate}</button>
         <button type="submit" class="cvrp-primary" data-cvrp-run>{copy.run}</button>
-        <button type="button" data-cvrp-cancel disabled>{copy.cancel}</button>
       </div>
       <p class="cvrp-small">{copy.caution}</p>
     </section>
@@ -65,5 +64,13 @@ const copy = lang === 'pt' ? {
     <div data-cvrp-results></div>
     <p><a target="_blank" rel="noopener noreferrer" href="https://github.com/jhserodio/logistic_problem_with_max_capacity">{copy.source}</a></p>
   </section>
+  <div class="cvrp-overlay" data-cvrp-overlay hidden>
+    <div class="cvrp-overlay-content" role="dialog" aria-modal="true" aria-label={lang === 'pt' ? 'Resolvendo problema' : 'Solving problem'}>
+      <span class="cvrp-spinner" aria-hidden="true"></span>
+      <h3>{lang === 'pt' ? 'Calculando rotas ótimas…' : 'Computing optimal routes…'}</h3>
+      <p>{lang === 'pt' ? 'O Rust está avaliando os subconjuntos no WebAssembly.' : 'Rust is evaluating subsets in WebAssembly.'}</p>
+      <button type="button" data-cvrp-cancel disabled>{copy.cancel}</button>
+    </div>
+  </div>
 </section>
 <script is:inline type="module" src="/cvrp-simulator.js"></script>
