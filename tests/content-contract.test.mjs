@@ -55,14 +55,18 @@ test('resume keeps original translated career entries and projects', () => {
   assert.match(adapter, /ResumeSchema\.parse/);
 });
 
-test('planned WASM app is not exposed as executable', () => {
+test('CVRP WASM app is active and backed by Rust in both languages', () => {
   for (const lang of ['pt', 'en']) {
-    const app = JSON.parse(read(`src/content/apps/${lang}/cvrp-solver.json`));
-    assert.equal(app.status, 'planned');
+    const app = JSON.parse(read('src/content/apps/' + lang + '/cvrp-solver.json'));
+    assert.equal(app.status, 'active');
     assert.equal(app.type, 'wasm-interactive');
-    assert.ok(!existsSync(path.join(root, 'crates/cvrp-solver-wasm/Cargo.toml')));
+    assert.equal(app.wasmModule, 'cvrp-solver');
   }
-  assert.match(read('src/templates/AppDetailPage.astro'), /status === 'planned'/);
+  assert.ok(existsSync(path.join(root, 'crates/cvrp-solver-wasm/Cargo.toml')));
+  assert.ok(existsSync(path.join(root, 'crates/cvrp-solver-wasm/src/lib.rs')));
+  assert.match(read('src/templates/AppDetailPage.astro'), /CvrpSimulator/);
+  assert.match(read('src/components/CvrpSimulator.astro'), /https:\/\/serodio\.dev\/en\/apps\//);
+  assert.match(read('public/cvrp-worker.js'), /cvrp_solver_wasm/);
 });
 
 test('canonical domain matches original Pages configuration', () => {

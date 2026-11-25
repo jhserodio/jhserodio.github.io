@@ -26,6 +26,10 @@ jobs:
       - uses: jetli/wasm-pack-action@v0.4.0
       - name: Unit tests
         run: npm test
+      - name: Check CVRP browser scripts
+        run: |
+          node --check public/cvrp-simulator.js
+          node --check public/cvrp-worker.js
       - name: Typecheck
         run: npm run check
       - name: Build
