@@ -157,3 +157,72 @@ test('cross-product of edit, regenerate, cancel and solve orders cannot leak sta
     assert.equal(f.results.at(-1).instance.marker, 987);
   }
 });
+
+
+test('minimum loading duration defers a fast Worker response until 1000 ms', () => {
+  let currentTime = 0;
+  let pending = null;
+  const phases = [], answers = [];
+  const worker = {
+    terminate() { this.terminated = true; },
+    postMessage(message) { this.message = message; },
+    onmessage: null, onerror: null, onmessageerror: null,
+  };
+  const session = createCvrpSession({
+    createWorker: () => worker,
+    minLoadingMs: 1000,
+    now: () => currentTime,
+    schedule: (fn, ms) => {
+      pending = { fn, at: currentTime + ms, cancelled: false };
+      return pending;
+    },
+    unschedule: token => { token.cancelled = true; },
+    onState: data => phases.push(data.phase),
+    onResult: result => answers.push(result),
+  });
+  session.start({ marker: 'fast' });
+  assert.equal(session.getSnapshot().busy, true);
+  currentTime = 35;
+  worker.onmessage({ data: { id: worker.message.id, result: { status: 'optimal', total_distance: '44' } } });
+  assert.equal(pending.at, 1000);
+  assert.equal(session.getSnapshot().phase, 'solving');
+  assert.equal(answers.length, 0);
+  currentTime = 1000;
+  pending.fn();
+  assert.equal(session.getSnapshot().busy, false);
+  assert.equal(session.getSnapshot().phase, 'resolved');
+  assert.equal(answers[0].total_distance, '44');
+  assert.deepEqual(phases, ['solving', 'resolved']);
+});
+
+test('cancelling during minimum feedback delay suppresses a late result', () => {
+  let pending;
+  let clock = 0;
+  const answers = [];
+  const worker = {
+    terminate() { this.terminated = true; },
+    postMessage(message) { this.message = message; },
+    onmessage: null, onerror: null, onmessageerror: null,
+  };
+  const session = createCvrpSession({
+    createWorker: () => worker,
+    minLoadingMs: 1000,
+    now: () => clock,
+    schedule: (fn, ms) => {
+      pending = { fn, ms, cancelled: false };
+      return pending;
+    },
+    unschedule: t => { t.cancelled = true; },
+    onResult: result => answers.push(result),
+  });
+  session.start({});
+  clock = 30;
+  worker.onmessage({ data: { id: worker.message.id, result: { status: 'optimal' } } });
+  assert.equal(session.getSnapshot().busy, true);
+  assert.equal(session.cancel(), true);
+  assert.equal(pending.cancelled, true);
+  clock = 1000;
+  pending.fn();
+  assert.equal(answers.length, 0);
+  assert.equal(session.getSnapshot().phase, 'cancelled');
+});

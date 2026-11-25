@@ -264,3 +264,111 @@ test('repeated explicit Resolve presses create new runs and do not leave stale s
   }
   expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(5);
 });
+
+
+test('the CVRP controller is fingerprinted and immune to a stale static script', async ({ page }) => {
+  const requested = [];
+  await page.route('**/cvrp-simulator.js', route =>
+    route.fulfill({ status: 200, contentType: 'application/javascript',
+      body: 'throw new Error("stale static controller loaded")' }));
+  page.on('request', request => requested.push(new URL(request.url()).pathname));
+  await page.goto(route('en'));
+  await expect(page.locator(resolve)).toBeEnabled();
+  await page.locator(resolve).click();
+  await expect(page.locator(results)).toContainText('44');
+  await expect(page.locator(graph + ' line')).toHaveCount(9);
+  expect(requested).not.toContain('/cvrp-simulator.js');
+  expect(requested.some(path => path.startsWith('/_astro/') && path.endsWith('.js'))).toBe(true);
+});
+
+test('fast solve keeps the loading dialog visible for at least one second', async ({ page }) => {
+  await mockWorker(page, 25);
+  await page.goto(route('en'));
+  const startedAt = await page.evaluate(() => {
+    window.__cvrpStartedAt = performance.now();
+    document.querySelector('[data-cvrp-run]').click();
+    return window.__cvrpStartedAt;
+  });
+  await expect(page.locator(overlay)).toBeVisible();
+  await expect(page.locator(root)).toHaveAttribute('aria-busy', 'true');
+  await expect(page.locator(overlay)).toBeHidden({ timeout: 10000 });
+  const elapsed = await page.evaluate(start => performance.now() - start, startedAt);
+  expect(elapsed).toBeGreaterThanOrEqual(950);
+  await expect(page.locator(results)).toContainText('123');
+});
+
+test('loading can be cancelled even after a fast Worker has replied', async ({ page }) => {
+  await mockWorker(page, 20);
+  await page.goto(route('en'));
+  await page.locator(resolve).click();
+  await expect(page.locator(overlay)).toBeVisible();
+  await page.waitForTimeout(90);
+  await expect(page.locator(overlay)).toBeVisible();
+  await page.locator('[data-cvrp-cancel]').click();
+  await expect(page.locator(overlay)).toBeHidden();
+  await expect(page.locator(results)).toBeEmpty();
+  await page.waitForTimeout(1100);
+  await expect(page.locator(results)).toBeEmpty();
+  await page.locator(resolve).click();
+  await expect(page.locator(results)).toContainText('123');
+});
+
+test('the interface rejects unsupported input limits and constrains K to the customer count', async ({ page }) => {
+  await page.goto(route('en'));
+  for (const [field, min, max] of [
+    ['n', '2', '12'], ['q', '1', '100000'], ['k', '1', '6'],
+    ['l', '1', '100000'], ['seed', '0', '2147483647'],
+  ]) {
+    await expect(page.locator(inputs[field])).toHaveAttribute('min', min);
+    await expect(page.locator(inputs[field])).toHaveAttribute('max', max);
+  }
+
+  await changeNumber(page, 'n', 2);
+  await expect(page.locator(inputs.k)).toHaveAttribute('max', '2');
+  await expect(page.locator(inputs.k)).toHaveValue('2');
+  await unsolved(page, 3);
+  await page.locator(resolve).click();
+  await finished(page);
+
+  await changeNumber(page, 'n', 13);
+  await expect(page.locator(resolve)).toBeDisabled();
+  await unsolved(page, 3);
+  await changeNumber(page, 'n', 12);
+  await expect(page.locator(resolve)).toBeEnabled();
+  await unsolved(page, 13);
+
+  await changeNumber(page, 'q', 100001);
+  await expect(page.locator(resolve)).toBeDisabled();
+  await changeNumber(page, 'q', 100000);
+  await expect(page.locator(resolve)).toBeEnabled();
+  await changeNumber(page, 'l', 100001);
+  await expect(page.locator(resolve)).toBeDisabled();
+  await changeNumber(page, 'l', 100000);
+  await expect(page.locator(resolve)).toBeEnabled();
+  await changeNumber(page, 'seed', 2147483648);
+  await expect(page.locator(resolve)).toBeDisabled();
+  await changeNumber(page, 'seed', 2147483647);
+  await expect(page.locator(resolve)).toBeEnabled();
+});
+
+test('JSON manual inputs cannot bypass the browser range limits', async ({ page }) => {
+  await page.goto(route('en'));
+  const field = page.locator(json);
+  const valid = JSON.parse(await field.inputValue());
+  for (const [mutator, label] of [
+    [input => { input.demands.push(1); }, 'invalid matrix dimensions'],
+    [input => { input.vehicle_capacity = 100001; }, 'capacity overflow'],
+    [input => { input.max_vehicles = 99; }, 'fleet overflow'],
+    [input => { input.max_route_distance = 100001; }, 'route length overflow'],
+    [input => { input.distances[0][1] = 100001; }, 'arc cost overflow'],
+    [input => { input.demands[0] = 100001; }, 'demand overflow'],
+  ]) {
+    const changed = structuredClone(valid);
+    mutator(changed);
+    await field.fill(JSON.stringify(changed));
+    await expect(page.locator(resolve), label).toBeDisabled();
+    await expect(page.locator(graph + ' line')).toHaveCount(0);
+    await field.fill(JSON.stringify(valid));
+    await expect(page.locator(resolve)).toBeEnabled();
+  }
+});

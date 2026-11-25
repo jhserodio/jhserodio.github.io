@@ -44,3 +44,21 @@ test('reject too many customers and invalid capacity', () => {
   assert.throws(() => sampleInstance({ n: 100, q: 5, k: 1, l: 10, seed: 1 }), /between/);
   assert.throws(() => sampleInstance({ n: 2, q: 0, k: 1, l: 10, seed: 1 }), /between/);
 });
+
+
+test('browser input boundaries reject values the demo cannot safely process', () => {
+  const base = { n: 12, q: 100000, k: 12, l: 100000, seed: 2147483647 };
+  const maximal = sampleInstance(base);
+  assert.equal(maximal.demands.length, 12);
+  assert.equal(maximal.vehicle_capacity, 100000);
+  assert.equal(maximal.max_route_distance, 100000);
+  assert.throws(() => sampleInstance({ ...base, n: 13 }), /between/);
+  assert.throws(() => sampleInstance({ ...base, n: 1 }), /between/);
+  assert.throws(() => sampleInstance({ ...base, q: 100001 }), /between/);
+  assert.throws(() => sampleInstance({ ...base, q: 0 }), /between/);
+  assert.throws(() => sampleInstance({ ...base, k: 0 }), /between/);
+  assert.throws(() => sampleInstance({ ...base, n: 2, k: 3 }), /between/);
+  assert.throws(() => sampleInstance({ ...base, l: 100001 }), /between/);
+  assert.throws(() => sampleInstance({ ...base, seed: 2147483648 }), /between/);
+  assert.throws(() => sampleInstance({ ...base, seed: -1 }), /between/);
+});
