@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 const route = lang => '/' + lang + '/apps/cvrp-solver/';
-const formSelectors = {
+const inputs = {
   n: '[data-cvrp-n]', q: '[data-cvrp-q]', k: '[data-cvrp-k]',
   l: '[data-cvrp-l]', seed: '[data-cvrp-seed]',
 };
@@ -10,25 +10,35 @@ const overlay = '[data-cvrp-overlay]';
 const status = '[data-cvrp-status]';
 const graph = '[data-cvrp-graph]';
 const results = '[data-cvrp-results]';
+const json = '[data-cvrp-json]';
+const resolve = '[data-cvrp-run]';
 
-async function editedNumber(page, name, value) {
-  const field = page.locator(formSelectors[name]);
+async function changeNumber(page, name, value) {
+  const field = page.locator(inputs[name]);
   await field.fill(String(value));
   await field.press('Tab');
+}
+
+async function unsolved(page, count) {
+  await expect(page.locator(graph + ' circle')).toHaveCount(count);
+  await expect(page.locator(graph + ' line')).toHaveCount(0);
+  await expect(page.locator(graph + ' polygon')).toHaveCount(0);
+  await expect(page.locator(results)).toBeEmpty();
+  await expect(page.locator(overlay)).toBeHidden();
 }
 
 async function finished(page) {
   await expect(page.locator(root)).toHaveAttribute('aria-busy', 'false');
   await expect(page.locator(overlay)).toBeHidden();
-  await expect(page.locator('[data-cvrp-run]')).toBeEnabled();
+  await expect(page.locator(resolve)).toBeEnabled();
   await expect(page.locator(status)).toContainText(
     /Optimal solution|No feasible solution|Solução ótima|Não existe solução viável/,
   );
 }
 
-// Mock only for deterministic lifecycle/UI tests. Real WASM runs separately.
-async function mockSlowWorker(page, ms = 500) {
-  await page.addInitScript(delay => {
+// Deterministic Worker for UI/lifecycle tests. Actual WASM is tested separately.
+async function mockWorker(page, delay = 220) {
+  await page.addInitScript(ms => {
     window.__cvrpWorkers = [];
     window.Worker = class FakeWorker {
       constructor() {
@@ -37,315 +47,220 @@ async function mockSlowWorker(page, ms = 500) {
       }
       postMessage(message) {
         this.payload = message;
-        // Save callback before cancellation to simulate a late message from a worker.
         const callback = this.onmessage;
         setTimeout(() => callback?.({ data: {
           id: message.id,
           result: {
             status: 'optimal',
             total_distance: '123',
-            routes: [{ stops: [0, 1, 0], demand: message.instance.demands[0], distance: 2 }],
+            routes: [{
+              stops: [0, 1, 0],
+              demand: message.instance.demands[0],
+              distance: message.instance.distances[0][1] +
+                message.instance.distances[1][0],
+            }],
           },
-        } }), delay);
+        } }), ms);
       }
       terminate() { this.terminated = true; }
     };
-  }, ms);
+  }, delay);
 }
 
-test('English and Portuguese pages include editable defaults and fixed Back to Apps link', async ({ page }) => {
+test('bilingual pages start with nodes only, default parameters and one Resolve button', async ({ page }) => {
   for (const lang of ['en', 'pt']) {
     await page.goto(route(lang));
-    await expect(page.locator('[data-cvrp-root]')).toBeVisible();
+    await expect(page.locator(root)).toBeVisible();
     await expect(page.locator('.cvrp-back')).toHaveAttribute('href', 'https://serodio.dev/en/apps/');
-    await expect(page.locator(formSelectors.n)).toHaveValue('6');
-    await expect(page.locator(formSelectors.q)).toHaveValue('7');
-    await expect(page.locator(formSelectors.k)).toHaveValue('3');
-    await expect(page.locator(formSelectors.l)).toHaveValue('18');
-    const instance = JSON.parse(await page.locator('[data-cvrp-json]').inputValue());
-    expect(instance.demands).toHaveLength(6);
-    await expect(page.locator(overlay)).toBeHidden();
-    await expect(page.locator(root)).toHaveAttribute('aria-busy', 'false');
+    await expect(page.locator(resolve)).toHaveAttribute('type', 'button');
+    await expect(page.locator(resolve)).toBeEnabled();
+    await expect(page.locator('[data-cvrp-generate]')).toHaveCount(0);
+    await expect(page.locator(inputs.n)).toHaveValue('6');
+    await expect(page.locator(inputs.q)).toHaveValue('7');
+    await expect(page.locator(inputs.k)).toHaveValue('3');
+    await expect(page.locator(inputs.l)).toHaveValue('18');
+    await expect(page.locator(inputs.seed)).toHaveValue('7');
+    expect(JSON.parse(await page.locator(json).inputValue()).demands).toHaveLength(6);
+    await unsolved(page, 7);
   }
 });
 
-test('actual compiled WASM solves fixture and redraws its nine arcs', async ({ page }) => {
+test('clicking Resolve runs compiled Rust/WASM, shows nine arcs and cost 44', async ({ page }) => {
   await page.goto(route('en'));
-  await page.locator('[data-cvrp-run]').click();
+  await unsolved(page, 7);
+  await page.locator(resolve).click();
   await expect(page.locator(status)).toContainText('Optimal solution found by Rust');
   await expect(page.locator(results)).toContainText('44');
   await expect(page.locator('.cvrp-route')).toHaveCount(3);
   await expect(page.locator(graph + ' line')).toHaveCount(9);
   await expect(page.locator(graph + ' polygon')).toHaveCount(9);
-  await expect(page.locator(root)).toHaveAttribute('aria-busy', 'false');
-  await expect(page.locator('[data-cvrp-run]')).toBeEnabled();
+  await finished(page);
 });
 
-test('actual WASM only regenerates and resolves after explicit clicks, across all controls', async ({ page }) => {
+test('changing every parameter clears edges and results immediately, then manual Resolve runs WASM again', async ({ page }) => {
   await page.goto(route('en'));
-  await page.locator('[data-cvrp-run]').click();
+  await page.locator(resolve).click();
   await finished(page);
-
   for (const [name, value] of [
     ['l', 45], ['q', 12], ['n', 7], ['seed', 17],
     ['k', 5], ['n', 5], ['q', 8], ['k', 3],
     ['l', 50], ['seed', 99], ['n', 6], ['q', 7],
   ]) {
-    const previousJSON = await page.locator('[data-cvrp-json]').inputValue();
-    const previousResult = await page.locator(results).innerHTML();
-    const previousGraph = await page.locator(graph).innerHTML();
-    const previousStatus = await page.locator(status).textContent();
-
-    await editedNumber(page, name, value);
-    // Editing parameters must not mutate the result, JSON, status or graph.
-    await expect(page.locator('[data-cvrp-json]')).toHaveValue(previousJSON);
-    expect(await page.locator(results).innerHTML()).toBe(previousResult);
-    expect(await page.locator(graph).innerHTML()).toBe(previousGraph);
-    await expect(page.locator(status)).toHaveText(previousStatus);
-    await expect(page.locator('[data-cvrp-pending]')).toBeVisible();
-    await expect(page.locator('[data-cvrp-run]')).toBeDisabled();
-    await expect(page.locator(overlay)).toBeHidden();
-
-    await page.locator('[data-cvrp-generate]').click();
-    await expect(page.locator('[data-cvrp-pending]')).toBeHidden();
-    await expect(page.locator(results)).toBeEmpty();
-    await expect(page.locator(graph + ' line')).toHaveCount(0);
-    await expect(page.locator(overlay)).toBeHidden();
-    await expect(page.locator('[data-cvrp-run]')).toBeEnabled();
-
-    const newInstance = JSON.parse(await page.locator('[data-cvrp-json]').inputValue());
-    if (name === 'n') expect(newInstance.demands.length).toBe(value);
-    if (name === 'q') expect(newInstance.vehicle_capacity).toBe(value);
-    if (name === 'k') expect(newInstance.max_vehicles).toBe(value);
-    if (name === 'l') expect(newInstance.max_route_distance).toBe(value);
-    await expect(page.locator(graph + ' circle')).toHaveCount(newInstance.demands.length + 1);
-
-    await page.locator('[data-cvrp-run]').click();
+    await changeNumber(page, name, value);
+    const instance = JSON.parse(await page.locator(json).inputValue());
+    if (name === 'n') expect(instance.demands).toHaveLength(value);
+    if (name === 'q') expect(instance.vehicle_capacity).toBe(value);
+    if (name === 'k') expect(instance.max_vehicles).toBe(value);
+    if (name === 'l') expect(instance.max_route_distance).toBe(value);
+    await unsolved(page, instance.demands.length + 1);
+    await expect(page.locator(resolve)).toBeEnabled();
+    await page.locator(resolve).click();
     await finished(page);
   }
-  await page.locator('[data-cvrp-run]').click();
-  await finished(page);
 });
-test('Generate clears solution without solving; manual JSON, errors and recovery work', async ({ page }) => {
-  await page.goto(route('pt'));
-  await page.locator('[data-cvrp-run]').click();
-  await finished(page);
-  await expect(page.locator(results)).toContainText('44');
 
-  await page.locator('[data-cvrp-generate]').click();
-  await expect(page.locator(results)).toBeEmpty();
-  await expect(page.locator(graph + ' line')).toHaveCount(0);
-  await expect(page.locator(status)).toContainText('Instância gerada');
-  await expect(page.locator(overlay)).toBeHidden();
-
-  const textarea = page.locator('[data-cvrp-json]');
-  const changed = JSON.parse(await textarea.inputValue());
-  changed.vehicle_capacity = 1;
-  await textarea.fill(JSON.stringify(changed));
-  await expect(page.locator('[data-cvrp-pending]')).toBeVisible();
-  await page.locator('[data-cvrp-run]').click();
-  await expect(page.locator(status)).toContainText('Não existe solução viável');
-  await expect(page.locator(root)).toHaveAttribute('aria-busy', 'false');
-
-  await textarea.fill('{ broken json }');
-  await page.locator('[data-cvrp-run]').click();
-  await expect(page.locator(status)).toContainText('Entrada inválida');
-  await expect(page.locator(root)).toHaveAttribute('aria-busy', 'false');
-
-  await editedNumber(page, 'q', 12);
-  await expect(page.locator('[data-cvrp-run]')).toBeDisabled();
-  await page.locator('[data-cvrp-generate]').click();
-  await expect(page.locator(status)).toContainText('Instância gerada');
-  await expect(page.locator(results)).toBeEmpty();
-  await page.locator('[data-cvrp-run]').click();
-  await finished(page);
-});
-test('loading blocks input; cancelling requires Generate and Solve for a new instance', async ({ page }) => {
-  await mockSlowWorker(page, 450);
+test('cross-ordered edits rebuild nodes and JSON but never spawn Worker without Resolve', async ({ page }) => {
+  await mockWorker(page, 85);
   await page.goto(route('en'));
-  await page.locator('[data-cvrp-run]').click();
-  await expect(page.locator(overlay)).toBeVisible();
-  await expect(page.locator(root)).toHaveAttribute('aria-busy', 'true');
-  for (const name of Object.keys(formSelectors)) {
-    await expect(page.locator(formSelectors[name])).toBeDisabled();
-  }
-  await expect(page.locator('[data-cvrp-json]')).toBeDisabled();
-  await expect(page.locator('[data-cvrp-run]')).toBeDisabled();
-  await expect(page.locator('[data-cvrp-generate]')).toBeDisabled();
-
-  await page.locator('[data-cvrp-cancel]').click();
-  await expect(page.locator(overlay)).toBeHidden();
-  await expect(page.locator(status)).toContainText('Computation cancelled');
-  await expect(page.locator(results)).toBeEmpty();
-
-  const workersBefore = await page.evaluate(() => window.__cvrpWorkers.length);
-  await editedNumber(page, 'n', 7);
-  await expect(page.locator('[data-cvrp-run]')).toBeDisabled();
-  await expect(page.locator(overlay)).toBeHidden();
-  expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(workersBefore);
-
-  await page.locator('[data-cvrp-generate]').click();
-  await expect(page.locator(results)).toBeEmpty();
-  await expect(page.locator(overlay)).toBeHidden();
-  expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(workersBefore);
-
-  await page.locator('[data-cvrp-run]').click();
-  await expect(page.locator(overlay)).toBeVisible();
-  await expect(page.locator(overlay)).toBeHidden();
+  await page.locator(resolve).click();
   await expect(page.locator(results)).toContainText('123');
-  await page.waitForTimeout(550);
-  expect(await page.locator('.cvrp-route').count()).toBe(1);
-  expect(await page.evaluate(() => window.__cvrpWorkers.every(w => w.terminated))).toBe(true);
-});
-test('cross-ordered edits never spawn a worker until Solve and preserve old results', async ({ page }) => {
-  await mockSlowWorker(page, 170);
-  await page.goto(route('en'));
-  await page.locator('[data-cvrp-run]').click();
-  await expect(page.locator(overlay)).toBeVisible();
-  await page.locator('[data-cvrp-cancel]').click();
-  await expect(page.locator(results)).toBeEmpty();
-
   for (const [name, value] of [
     ['n', 4], ['seed', 4], ['q', 8], ['k', 4], ['l', 60],
     ['n', 6], ['q', 15], ['seed', 7], ['k', 3], ['l', 90],
   ]) {
-    const countBefore = await page.evaluate(() => window.__cvrpWorkers.length);
-    const oldResults = await page.locator(results).innerHTML();
-    const oldJSON = await page.locator('[data-cvrp-json]').inputValue();
-    await editedNumber(page, name, value);
-    expect(await page.locator(results).innerHTML()).toBe(oldResults);
-    await expect(page.locator('[data-cvrp-json]')).toHaveValue(oldJSON);
-    await expect(page.locator(overlay)).toBeHidden();
-    expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(countBefore);
-
-    await page.locator('[data-cvrp-generate]').click();
-    await expect(page.locator(results)).toBeEmpty();
-    expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(countBefore);
-
-    await page.locator('[data-cvrp-run]').click();
-    await expect(page.locator(overlay)).toBeVisible();
-    await expect(page.locator(overlay)).toBeHidden();
+    const before = await page.evaluate(() => window.__cvrpWorkers.length);
+    await changeNumber(page, name, value);
+    const instance = JSON.parse(await page.locator(json).inputValue());
+    await unsolved(page, instance.demands.length + 1);
+    expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(before);
+    await page.locator(resolve).click();
     await expect(page.locator(results)).toContainText('123');
-    expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(countBefore + 1);
+    expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(before + 1);
   }
-
-  await page.locator('[data-cvrp-generate]').click();
-  await expect(page.locator(results)).toBeEmpty();
-  await expect(page.locator(overlay)).toBeHidden();
-  await page.locator('[data-cvrp-run]').click();
-  await expect(page.locator(overlay)).toBeVisible();
-  await expect(page.locator(overlay)).toBeHidden();
-  expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(12);
 });
-test('programmatic parameter events during loading do not cancel the current run', async ({ page }) => {
-  await mockSlowWorker(page, 400);
-  await page.goto(route('en'));
-  await page.locator('[data-cvrp-run]').click();
-  await expect(page.locator(overlay)).toBeVisible();
 
+test('multiple parameter changes before Resolve preserve only current nodes', async ({ page }) => {
+  await mockWorker(page, 90);
+  await page.goto(route('en'));
+  await page.locator(resolve).click();
+  await expect(page.locator(results)).toContainText('123');
+  const countBefore = await page.evaluate(() => window.__cvrpWorkers.length);
+  for (const [name, value] of [
+    ['q', 17], ['n', 10], ['l', 75], ['seed', 42], ['k', 5],
+    ['n', 8], ['q', 9], ['l', 90], ['seed', 100],
+  ]) {
+    await changeNumber(page, name, value);
+    await unsolved(page, name === 'n' ? value + 1 : (await page.locator(inputs.n).inputValue()) * 1 + 1);
+    expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(countBefore);
+  }
+  await page.locator(resolve).click();
+  await expect(page.locator(results)).toContainText('123');
+  const submitted = await page.evaluate(() => window.__cvrpWorkers.at(-1).payload.instance);
+  expect(submitted.demands).toHaveLength(8);
+  expect(submitted.vehicle_capacity).toBe(9);
+  expect(submitted.max_route_distance).toBe(90);
+  expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(countBefore + 1);
+});
+
+test('manual JSON changes clear solved edges, accept new values and handle invalid content', async ({ page }) => {
+  await page.goto(route('pt'));
+  await page.locator(resolve).click();
+  await expect(page.locator(results)).toContainText('44');
+  const field = page.locator(json);
+  const instance = JSON.parse(await field.inputValue());
+  instance.vehicle_capacity = 1;
+  await field.fill(JSON.stringify(instance));
+  await unsolved(page, 7);
+  await expect(page.locator(resolve)).toBeEnabled();
+  await page.locator(resolve).click();
+  await expect(page.locator(status)).toContainText('Não existe solução viável');
+  await finished(page);
+
+  await field.fill('{ invalid JSON }');
+  await unsolved(page, 7);
+  await expect(page.locator(resolve)).toBeDisabled();
+  await expect(page.locator(status)).toContainText('JSON inválido');
+
+  await changeNumber(page, 'q', 12);
+  await unsolved(page, 7);
+  await expect(page.locator(resolve)).toBeEnabled();
+  await page.locator(resolve).click();
+  await finished(page);
+});
+
+test('invalid form input leaves only nodes, disables Resolve, and recovers without Generate', async ({ page }) => {
+  await page.goto(route('en'));
+  await page.locator(resolve).click();
+  await expect(page.locator(results)).toContainText('44');
+  await changeNumber(page, 'n', 13);
+  await unsolved(page, 7);
+  await expect(page.locator(resolve)).toBeDisabled();
+  await expect(page.locator(status)).toContainText('Invalid parameters');
+  await changeNumber(page, 'n', 5);
+  await unsolved(page, 6);
+  await expect(page.locator(resolve)).toBeEnabled();
+  await page.locator(resolve).click();
+  await finished(page);
+});
+
+test('loading blocks controls until the Worker finishes and permits cancellation', async ({ page }) => {
+  await mockWorker(page, 600);
+  await page.goto(route('en'));
+  await page.locator(resolve).click();
+  await expect(page.locator(overlay)).toBeVisible();
+  await expect(page.locator(root)).toHaveAttribute('aria-busy', 'true');
+  for (const name of Object.keys(inputs)) await expect(page.locator(inputs[name])).toBeDisabled();
+  await expect(page.locator(json)).toBeDisabled();
+  await expect(page.locator(resolve)).toBeDisabled();
+  await expect(page.locator('[data-cvrp-cancel]')).toBeEnabled();
+
+  await page.locator('[data-cvrp-cancel]').click();
+  await expect(page.locator(overlay)).toBeHidden();
+  await unsolved(page, 7);
+  await expect(page.locator(status)).toContainText('Computation cancelled');
+
+  await changeNumber(page, 'n', 7);
+  await unsolved(page, 8);
+  await page.locator(resolve).click();
+  await expect(page.locator(overlay)).toBeVisible();
+  await expect(page.locator(overlay)).toBeHidden();
+  await expect(page.locator(results)).toContainText('123');
+  await page.waitForTimeout(650);
+  await expect(page.locator(results)).toContainText('123');
+  expect(await page.evaluate(() => window.__cvrpWorkers.every(w => w.terminated))).toBe(true);
+});
+
+test('programmatic input events while loading do not mutate in-flight results', async ({ page }) => {
+  await mockWorker(page, 300);
+  await page.goto(route('en'));
+  await page.locator(resolve).click();
+  await expect(page.locator(overlay)).toBeVisible();
   await page.evaluate(() => {
     const el = document.querySelector('[data-cvrp-n]');
     el.value = '8';
     el.dispatchEvent(new Event('input', { bubbles: true }));
     el.dispatchEvent(new Event('change', { bubbles: true }));
   });
-  await expect(page.locator('[data-cvrp-json]')).toHaveJSProperty('disabled', true);
   await expect(page.locator(overlay)).toBeHidden();
-  expect(JSON.parse(await page.locator('[data-cvrp-json]').inputValue()).demands).toHaveLength(6);
   await expect(page.locator(results)).toContainText('123');
-  expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(1);
-
-  await page.locator('[data-cvrp-generate]').click();
-  await expect(page.locator(results)).toBeEmpty();
-  expect(JSON.parse(await page.locator('[data-cvrp-json]').inputValue()).demands).toHaveLength(8);
-  expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(1);
-  await page.locator('[data-cvrp-run]').click();
-  await expect(page.locator(overlay)).toBeHidden();
+  const oldInstance = await page.locator(json).inputValue();
+  expect(JSON.parse(oldInstance).demands).toHaveLength(6);
+  // Once unlocked, input events refresh the instance and clear route edges.
+  await page.locator(inputs.n).dispatchEvent('change');
+  await unsolved(page, 9);
+  await page.locator(resolve).click();
   await expect(page.locator(results)).toContainText('123');
   expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(2);
 });
-test('invalid staged parameters preserve result until Generate, then recover', async ({ page }) => {
+
+test('repeated explicit Resolve presses create new runs and do not leave stale solutions', async ({ page }) => {
+  await mockWorker(page, 90);
   await page.goto(route('en'));
-  await page.locator('[data-cvrp-run]').click();
-  await finished(page);
-  await expect(page.locator(results)).toContainText('44');
-  const previousJSON = await page.locator('[data-cvrp-json]').inputValue();
-  const previousGraph = await page.locator(graph).innerHTML();
-
-  await editedNumber(page, 'n', 13);
-  await expect(page.locator(results)).toContainText('44');
-  await expect(page.locator('[data-cvrp-json]')).toHaveValue(previousJSON);
-  expect(await page.locator(graph).innerHTML()).toBe(previousGraph);
-  await expect(page.locator('[data-cvrp-run]')).toBeDisabled();
-
-  await page.locator('[data-cvrp-generate]').click();
-  await expect(page.locator(status)).toContainText('Invalid parameters');
-  await expect(page.locator(results)).toBeEmpty();
-  await expect(page.locator('[data-cvrp-json]')).toHaveValue('');
-  await expect(page.locator(root)).toHaveAttribute('aria-busy', 'false');
-  await expect(page.locator('[data-cvrp-run]')).toBeDisabled();
-
-  await editedNumber(page, 'n', 5);
-  await page.locator('[data-cvrp-generate]').click();
-  await expect(page.locator('[data-cvrp-run]')).toBeEnabled();
-  await expect(page.locator(results)).toBeEmpty();
-  await page.locator('[data-cvrp-run]').click();
-  await finished(page);
-});
-
-test('changing several parameters before Generate never changes the previous solution', async ({ page }) => {
-  await mockSlowWorker(page, 80);
-  await page.goto(route('en'));
-  await page.locator('[data-cvrp-run]').click();
-  await expect(page.locator(results)).toContainText('123');
-
-  const jsonBefore = await page.locator('[data-cvrp-json]').inputValue();
-  const resultBefore = await page.locator(results).innerHTML();
-  const graphBefore = await page.locator(graph).innerHTML();
-  const statusBefore = await page.locator(status).textContent();
-
-  for (const [key, value] of [
-    ['q', 17], ['n', 10], ['l', 75], ['seed', 42], ['k', 5],
-    ['n', 8], ['q', 9], ['l', 90],
-  ]) {
-    await editedNumber(page, key, value);
-    await expect(page.locator('[data-cvrp-json]')).toHaveValue(jsonBefore);
-    expect(await page.locator(results).innerHTML()).toBe(resultBefore);
-    expect(await page.locator(graph).innerHTML()).toBe(graphBefore);
-    await expect(page.locator(status)).toHaveText(statusBefore);
+  for (let i = 0; i < 5; i++) {
+    await page.locator(resolve).click();
+    await expect(page.locator(results)).toContainText('123');
     await expect(page.locator(overlay)).toBeHidden();
+    await expect(page.locator(root)).toHaveAttribute('aria-busy', 'false');
   }
-  expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(1);
-  await page.locator('[data-cvrp-generate]').click();
-  await expect(page.locator(results)).toBeEmpty();
-  await expect(page.locator(graph + ' line')).toHaveCount(0);
-  await expect(page.locator('[data-cvrp-json]')).not.toHaveValue(jsonBefore);
-  expect(JSON.parse(await page.locator('[data-cvrp-json]').inputValue()).demands).toHaveLength(8);
-  expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(1);
-  await page.locator('[data-cvrp-run]').click();
-  await expect(page.locator(results)).toContainText('123');
-  expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(2);
-});
-
-test('editing JSON manually preserves current results until explicit Solve', async ({ page }) => {
-  await mockSlowWorker(page, 70);
-  await page.goto(route('pt'));
-  await page.locator('[data-cvrp-run]').click();
-  await expect(page.locator(results)).toContainText('123');
-  const graphBefore = await page.locator(graph).innerHTML();
-
-  const textarea = page.locator('[data-cvrp-json]');
-  const json = JSON.parse(await textarea.inputValue());
-  json.vehicle_capacity = 11;
-  await textarea.fill(JSON.stringify(json));
-  await expect(page.locator(results)).toContainText('123');
-  expect(await page.locator(graph).innerHTML()).toBe(graphBefore);
-  await expect(page.locator('[data-cvrp-pending]')).toContainText('JSON editado');
-  expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(1);
-  await page.locator('[data-cvrp-run]').click();
-  await expect(page.locator('[data-cvrp-pending]')).toBeHidden();
-  await expect(page.locator(results)).toContainText('123');
-  const lastInput = await page.evaluate(() => window.__cvrpWorkers.at(-1).payload.instance);
-  expect(lastInput.vehicle_capacity).toBe(11);
-  expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(2);
+  expect(await page.evaluate(() => window.__cvrpWorkers.length)).toBe(5);
 });
