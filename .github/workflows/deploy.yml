@@ -40,6 +40,8 @@ jobs:
           test -s dist/wasm/cvrp-solver/cvrp_solver_wasm.js
           test -s dist/en/apps/cvrp-solver/index.html
           test -s dist/pt/apps/cvrp-solver/index.html
+      - name: Smoke-test compiled Rust/WASM solver
+        run: node scripts/check-cvrp-wasm.mjs
       - name: Verify generated Open Graph previews
         run: node scripts/check-social-preview.mjs
       - uses: actions/upload-pages-artifact@v3

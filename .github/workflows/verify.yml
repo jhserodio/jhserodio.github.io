@@ -52,3 +52,5 @@ jobs:
         run: |
           test -s dist/wasm/cvrp-solver/cvrp_solver_wasm_bg.wasm
           test -s dist/wasm/cvrp-solver/cvrp_solver_wasm.js
+      - name: Smoke-test compiled Rust/WASM solver
+        run: node scripts/check-cvrp-wasm.mjs
