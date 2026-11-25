@@ -179,7 +179,10 @@ test('manual JSON changes clear solved edges, accept new values and handle inval
   await page.locator(resolve).click();
   await expect(page.locator(status)).toContainText('Instância inviável');
   await expect(page.locator('.cvrp-infeasible')).toBeVisible();
-  await finished(page);
+  await expect(page.locator(root)).toHaveAttribute('aria-busy', 'false');
+  await expect(page.locator(overlay)).toBeHidden();
+  await expect(page.locator(graph + ' line')).toHaveCount(0);
+  await expect(page.locator(graph + ' polygon')).toHaveCount(0);
 
   await field.fill('{ invalid JSON }');
   await unsolved(page, 7);
