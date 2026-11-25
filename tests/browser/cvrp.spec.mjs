@@ -447,3 +447,78 @@ test('REGRESSION: after invalid JSON or cancellation, corrected inputs still pro
   await page.locator(resolve).click();
   await finished(page);
 });
+
+
+test('SVG graph inherits the portfolio palette and renders every route edge as dashed', async ({ page }) => {
+  await page.goto(route('en'));
+
+  // Before solving, nodes have the button surface, accent border and light text.
+  const before = await page.evaluate(() => {
+    const button = document.querySelector('.cvrp-primary');
+    const node = document.querySelector('[data-cvrp-graph] circle:not(.cvrp-graph-depot)');
+    const label = document.querySelector('.cvrp-graph-node-label:not(.cvrp-graph-depot-label)');
+    return {
+      buttonBackground: getComputedStyle(button).backgroundColor,
+      buttonBorder: getComputedStyle(button).borderTopColor,
+      buttonText: getComputedStyle(button).color,
+      nodeFill: getComputedStyle(node).fill,
+      nodeStroke: getComputedStyle(node).stroke,
+      labelFill: getComputedStyle(label).fill,
+    };
+  });
+  expect(before.nodeFill).toBe(before.buttonBackground);
+  expect(before.nodeStroke).toBe(before.buttonBorder);
+  expect(before.labelFill).toBe(before.buttonText);
+  await expect(page.locator(graph + ' line')).toHaveCount(0);
+  await expect(page.locator(graph + ' polygon')).toHaveCount(0);
+
+  await page.locator(resolve).click();
+  await finished(page);
+  const visual = await page.evaluate(() => {
+    const svg = document.querySelector('[data-cvrp-graph]');
+    const tokens = getComputedStyle(document.documentElement);
+    const darkPanel = tokens.getPropertyValue('--panel').trim();
+    const lineColor = tokens.getPropertyValue('--line').trim();
+    const weight = svg.querySelector('.cvrp-graph-weight');
+    const weightLabel = svg.querySelector('.cvrp-graph-weight-label');
+    const routes = [...svg.querySelectorAll('line.cvrp-graph-edge')];
+    const diamonds = [...svg.querySelectorAll('polygon.cvrp-graph-weight')];
+    return {
+      darkPanel,
+      lineColor,
+      diamondFill: getComputedStyle(weight).fill,
+      diamondStroke: getComputedStyle(weight).stroke,
+      weightLabelBold: getComputedStyle(weightLabel).fontWeight,
+      weightLabelFill: getComputedStyle(weightLabel).fill,
+      count: routes.length,
+      diamondCount: diamonds.length,
+      dashPatterns: routes.map(line => line.getAttribute('stroke-dasharray')),
+      routeColors: routes.map(line => getComputedStyle(line).stroke),
+      arrowMarkers: routes.map(line => line.getAttribute('marker-end')),
+    };
+  });
+  expect(visual.count).toBe(9);
+  expect(visual.diamondCount).toBe(visual.count);
+  expect(visual.dashPatterns.every(pattern => pattern === '10 8')).toBe(true);
+  expect(visual.arrowMarkers.every(marker => marker?.startsWith('url(#cvrp-arrow-'))).toBe(true);
+  expect(visual.diamondFill).toBe('rgb(16, 21, 29)');
+  expect(visual.diamondStroke).toBe('rgb(67, 89, 117)');
+  expect(visual.weightLabelBold).toBe('400');
+  expect(visual.weightLabelFill).toBe(before.buttonText);
+  expect(new Set(visual.routeColors).size).toBeGreaterThanOrEqual(3);
+
+  // Editing drops dashed edges and diamonds but preserves the button-themed nodes.
+  await changeNumber(page, 'n', 8);
+  await unsolved(page, 9);
+  const editedFill = await page.locator(graph + ' circle.cvrp-graph-node').first().evaluate(
+    el => getComputedStyle(el).fill
+  );
+  expect(editedFill).toBe(before.buttonBackground);
+  await page.locator(resolve).click();
+  await finished(page);
+  const after = await page.locator(graph + ' line.cvrp-graph-edge').evaluateAll(
+    elements => elements.map(el => el.getAttribute('stroke-dasharray'))
+  );
+  expect(after.length).toBeGreaterThan(0);
+  expect(after.every(pattern => pattern === '10 8')).toBe(true);
+});

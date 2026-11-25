@@ -2,7 +2,11 @@ import { CVRP_LIMITS, defaultInstance, sampleInstance, sampleFeasibilityBarrier 
 import { createCvrpSession } from './cvrp-session.mjs';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
-const COLORS = ['#8fc9ff', '#3bc9a5', '#f59e67', '#b39bff', '#e5ba55', '#f08cb3'];
+// Route colors follow the portfolio's existing CSS theme tokens.
+const COLORS = [
+  'var(--accent)', 'var(--focus)', 'var(--accent-soft)',
+  'var(--muted)', 'var(--text)', 'var(--line)',
+];
 
 function svgNode(tag, attributes = {}, text) {
   const el = document.createElementNS(SVG_NS, tag);
@@ -58,23 +62,26 @@ function drawGraph(svg, instance, routes = []) {
       const x1 = from.x + ux * aRadius, y1 = from.y + uy * aRadius;
       const x2 = to.x - ux * (bRadius + 7), y2 = to.y - uy * (bRadius + 7);
       svg.append(svgNode('line', {
+        class: 'cvrp-graph-edge',
         x1, y1, x2, y2, stroke: color, 'stroke-width': 3,
+        'stroke-dasharray': '10 8',
         'stroke-linecap': 'round', 'marker-end': 'url(#cvrp-arrow-' + (idx % COLORS.length) + ')',
       }));
 
       // The weight diamond sits directly on its corresponding edge.
       const cx = (x1 + x2) / 2, cy = (y1 + y2) / 2;
       const diamond = svgNode('polygon', {
+        class: 'cvrp-graph-weight',
         points: [
           [cx, cy - 16], [cx + 22, cy], [cx, cy + 16], [cx - 22, cy],
         ].map(pair => pair.map(x => x.toFixed(1)).join(',')).join(' '),
-        fill: '#e2e8f0', stroke: '#94a3b8', 'stroke-width': 1.7,
       });
       svg.append(diamond);
       const cost = instance.distances?.[fromIndex]?.[toIndex];
       svg.append(svgNode('text', {
+        class: 'cvrp-graph-weight-label',
         x: cx, y: cy + 5, 'font-size': 17, 'text-anchor': 'middle',
-        'font-weight': 400, fill: '#64748b',
+        'font-weight': 400,
       }, cost === undefined ? '?' : cost));
     }
   }
@@ -84,17 +91,18 @@ function drawGraph(svg, instance, routes = []) {
     const p = positions[i], depot = i === 0;
     const g = svgNode('g');
     g.append(svgNode('circle', {
+      class: depot ? 'cvrp-graph-node cvrp-graph-depot' : 'cvrp-graph-node',
       cx: p.x, cy: p.y, r: depot ? 34 : 29,
-      fill: depot ? '#fff1c2' : '#f8fafc',
-      stroke: depot ? '#eab957' : '#8fc9ff', 'stroke-width': 3,
     }));
     g.append(svgNode('text', {
+      class: depot ? 'cvrp-graph-node-label cvrp-graph-depot-label' : 'cvrp-graph-node-label',
       x: p.x, y: p.y + 8, 'text-anchor': 'middle',
-      'font-size': 26, 'font-weight': 400, fill: '#10151d',
+      'font-size': 26, 'font-weight': 400,
     }, customerName(i)));
     if (i !== 0) {
       g.append(svgNode('text', {
-        x: p.x, y: p.y + 49, 'text-anchor': 'middle', 'font-size': 15, fill: '#c6d6ea',
+        class: 'cvrp-graph-demand',
+        x: p.x, y: p.y + 49, 'text-anchor': 'middle', 'font-size': 15,
       }, 'd=' + instance.demands[i - 1]));
     }
     svg.append(g);
