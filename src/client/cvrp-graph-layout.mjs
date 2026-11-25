@@ -5,7 +5,7 @@ export const NODE_RADIUS = 20;
 export const DEPOT_RADIUS = 24;
 const MID = { x: 450, y: 283 };
 const BENDS = [24, -24, 48, -48, 0, 76, -76, 110, -110, 150, -150, 200, -200];
-const T_VALUES = [0.5, 0.36, 0.64, 0.27, 0.73, 0.43, 0.57, 0.18, 0.82];
+const T_VALUES = [0.5, 0.36, 0.64, 0.27, 0.73, 0.43, 0.57, 0.18, 0.82, 0.12, 0.88];
 const length = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const distancePointSegment = (point, a, b) => {
   const vx = b.x - a.x, vy = b.y - a.y;
@@ -78,7 +78,9 @@ function routeCost(candidate, accepted, positions) {
     for (const p of candidate.points) {
       if (shared.some(i => length(p, positions[i]) < 42)) continue;
       const d = minToPolyline(p, old.points);
-      if (d < 13) score += (13 - d) ** 2 * .9;
+      // Bidirectional depot legs need wider lanes for both arrow and weight.
+      const clearance = old.from === candidate.to && old.to === candidate.from ? 30 : 13;
+      if (d < clearance) score += (clearance - d) ** 2 * .9;
     }
   }
   return score;
@@ -111,23 +113,47 @@ function labelCost(box, ownEdge, edges, positions, already = []) {
 }
 
 function placeWeights(edges, positions) {
-  const reserved = [];
   const pending = [...edges].sort((a, b) => length(b.a, b.b) - length(a.a, a.b));
-  for (const edge of pending) {
+  function bestWeight(edge, others) {
     const txt = String(edge.cost);
-    const halfWidth = Math.max(14, 7 + txt.length * 4.5);
-    const halfHeight = 11;
+    const halfWidth = Math.max(14, 7 + txt.length * 4.5), halfHeight = 11;
     let best = null, bestScore = Infinity;
     for (const t of T_VALUES) {
       const p = sampleQuadratic(edge.a, edge.control, edge.b, t);
-      const candidate = { x: p.x, y: p.y, halfWidth, halfHeight, t };
-      const score = labelCost(candidate, edge, edges, positions, reserved) + Math.abs(t - .5) * 4;
-      if (score < bestScore) { bestScore = score; best = candidate; }
+      const tangent = {
+        x: (1 - t) * (edge.control.x - edge.a.x) + t * (edge.b.x - edge.control.x),
+        y: (1 - t) * (edge.control.y - edge.a.y) + t * (edge.b.y - edge.control.y),
+      };
+      const norm = Math.hypot(tangent.x, tangent.y) || 1;
+      // A small perpendicular lane shift keeps the diamond touching its edge
+      // while allowing two nearby directed paths to display separate costs.
+      for (const shift of [0, -5, 5, -9, 9]) {
+        const candidate = {
+          x: p.x - tangent.y / norm * shift,
+          y: p.y + tangent.x / norm * shift,
+          halfWidth, halfHeight, t, shift,
+        };
+        const score = labelCost(candidate, edge, edges, positions, others) +
+          Math.abs(t - .5) * 4 + Math.abs(shift) * .25;
+        if (score < bestScore) { best = candidate; bestScore = score; }
+      }
     }
-    edge.weight = best;
-    reserved.push(best);
+    return best;
   }
-  return reserved;
+  const reserved = [];
+  for (const edge of pending) {
+    edge.weight = bestWeight(edge, reserved);
+    reserved.push(edge.weight);
+  }
+  // Revisit each placement with the complete set of weights. A fixed-order
+  // greedy pass can otherwise trap two diamonds in the same intersection.
+  for (let sweep = 0; sweep < 3; sweep++) {
+    for (const edge of [...pending].reverse()) {
+      const others = pending.filter(other => other !== edge).map(other => other.weight);
+      edge.weight = bestWeight(edge, others);
+    }
+  }
+  return edges.map(edge => edge.weight);
 }
 
 function placeDemands(positions, edges, weights, demands) {
@@ -146,13 +172,15 @@ function placeDemands(positions, edges, weights, demands) {
       const [rawX, rawY] = dirs[i];
       const norm = Math.hypot(rawX, rawY);
       const dx = rawX / norm, dy = rawY / norm;
-      const candidate = {
-        x: p.x + dx * (NODE_RADIUS + 22 + (Math.abs(dx) > .6 ? halfWidth * .18 : 0)),
-        y: p.y + dy * (NODE_RADIUS + 20), halfWidth, halfHeight,
-      };
-      let score = labelCost(candidate, null, edges, positions, [...weights, ...occupied]);
-      score += 2.3 * (1 - (dx * radial.x + dy * radial.y)) + i * .02;
-      if (score < bestScore) { bestScore = score; best = candidate; }
+      for (const extension of [0, 12, 24, 36]) {
+        const candidate = {
+          x: p.x + dx * (NODE_RADIUS + 22 + extension + (Math.abs(dx) > .6 ? halfWidth * .18 : 0)),
+          y: p.y + dy * (NODE_RADIUS + 20 + extension), halfWidth, halfHeight,
+        };
+        let score = labelCost(candidate, null, edges, positions, [...weights, ...occupied]);
+        score += 2.3 * (1 - (dx * radial.x + dy * radial.y)) + i * .02 + extension * .07;
+        if (score < bestScore) { bestScore = score; best = candidate; }
+      }
     }
     occupied.push(best);
     return best;
