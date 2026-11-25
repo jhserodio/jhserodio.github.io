@@ -21,7 +21,7 @@ async function changeNumber(page, name, value) {
 
 async function unsolved(page, count) {
   await expect(page.locator(graph + ' circle')).toHaveCount(count);
-  await expect(page.locator(graph + ' line')).toHaveCount(0);
+  await expect(page.locator(graph + ' path.cvrp-graph-edge')).toHaveCount(0);
   await expect(page.locator(graph + ' polygon')).toHaveCount(0);
   await expect(page.locator(results)).toBeEmpty();
   await expect(page.locator(overlay)).toBeHidden();
@@ -35,7 +35,7 @@ async function finished(page) {
   // A "completed but infeasible" Worker is NOT success for a sample that
   // was deliberately generated with a feasible witness.
   await expect(page.locator('.cvrp-route').first()).toBeVisible();
-  const edgeCount = await page.locator(graph + ' line').count();
+  const edgeCount = await page.locator(graph + ' path.cvrp-graph-edge').count();
   expect(edgeCount).toBeGreaterThan(0);
   await expect(page.locator(graph + ' polygon')).toHaveCount(edgeCount);
 }
@@ -96,7 +96,7 @@ test('clicking Resolve runs compiled Rust/WASM, shows nine arcs and cost 44', as
   await expect(page.locator(status)).toContainText('Optimal solution found by Rust');
   await expect(page.locator(results)).toContainText('44');
   await expect(page.locator('.cvrp-route')).toHaveCount(3);
-  await expect(page.locator(graph + ' line')).toHaveCount(9);
+  await expect(page.locator(graph + ' path.cvrp-graph-edge')).toHaveCount(9);
   await expect(page.locator(graph + ' polygon')).toHaveCount(9);
   await finished(page);
 });
@@ -181,7 +181,7 @@ test('manual JSON changes clear solved edges, accept new values and handle inval
   await expect(page.locator('.cvrp-infeasible')).toBeVisible();
   await expect(page.locator(root)).toHaveAttribute('aria-busy', 'false');
   await expect(page.locator(overlay)).toBeHidden();
-  await expect(page.locator(graph + ' line')).toHaveCount(0);
+  await expect(page.locator(graph + ' path.cvrp-graph-edge')).toHaveCount(0);
   await expect(page.locator(graph + ' polygon')).toHaveCount(0);
 
   await field.fill('{ invalid JSON }');
@@ -284,7 +284,7 @@ test('the CVRP controller is fingerprinted and immune to a stale static script',
   await expect(page.locator(resolve)).toBeEnabled();
   await page.locator(resolve).click();
   await expect(page.locator(results)).toContainText('44');
-  await expect(page.locator(graph + ' line')).toHaveCount(9);
+  await expect(page.locator(graph + ' path.cvrp-graph-edge')).toHaveCount(9);
   expect(requested).not.toContain('/cvrp-simulator.js');
   expect(requested.some(path => path.startsWith('/_astro/') && path.endsWith('.js'))).toBe(true);
 });
@@ -375,7 +375,7 @@ test('JSON manual inputs cannot bypass the browser range limits', async ({ page 
     mutator(changed);
     await field.fill(JSON.stringify(changed));
     await expect(page.locator(resolve), label).toBeDisabled();
-    await expect(page.locator(graph + ' line')).toHaveCount(0);
+    await expect(page.locator(graph + ' path.cvrp-graph-edge')).toHaveCount(0);
     await field.fill(JSON.stringify(valid));
     await expect(page.locator(resolve)).toBeEnabled();
   }
@@ -397,7 +397,7 @@ test('REGRESSION: actual WASM must redraw edges after editing and resolving new 
     await unsolved(page, newInstance.demands.length + 1);
     await page.locator(resolve).click();
     await finished(page);
-    const edges = await page.locator(graph + ' line').count();
+    const edges = await page.locator(graph + ' path.cvrp-graph-edge').count();
     const polylines = await page.locator(graph + ' polygon').count();
     const cards = await page.locator('.cvrp-route').count();
     expect(edges).toBeGreaterThanOrEqual(cards * 2);
@@ -420,7 +420,7 @@ test('REGRESSION: knowingly impossible synthetic instances display visible infea
   await page.locator(resolve).click();
   await expect(page.locator(status)).toContainText('Infeasible instance');
   await expect(page.locator('.cvrp-infeasible')).toContainText('Increase Q or K');
-  await expect(page.locator(graph + ' line')).toHaveCount(0);
+  await expect(page.locator(graph + ' path.cvrp-graph-edge')).toHaveCount(0);
   await expect(page.locator(graph + ' polygon')).toHaveCount(0);
   await expect(page.locator(overlay)).toBeHidden();
   await changeNumber(page, 'k', 12);
@@ -436,7 +436,7 @@ test('REGRESSION: after invalid JSON or cancellation, corrected inputs still pro
   await finished(page);
   await page.locator(json).fill('{ bad }');
   await expect(page.locator(resolve)).toBeDisabled();
-  await expect(page.locator(graph + ' line')).toHaveCount(0);
+  await expect(page.locator(graph + ' path.cvrp-graph-edge')).toHaveCount(0);
   await changeNumber(page, 'seed', 123);
   await expect(page.locator(resolve)).toBeEnabled();
   await unsolved(page, 7);
@@ -469,7 +469,7 @@ test('SVG graph inherits the portfolio palette and renders every route edge as d
   expect(before.nodeFill).toBe(before.buttonBackground);
   expect(before.nodeStroke).toBe(before.buttonBorder);
   expect(before.labelFill).toBe(before.buttonText);
-  await expect(page.locator(graph + ' line')).toHaveCount(0);
+  await expect(page.locator(graph + ' path.cvrp-graph-edge')).toHaveCount(0);
   await expect(page.locator(graph + ' polygon')).toHaveCount(0);
 
   await page.locator(resolve).click();
@@ -481,7 +481,7 @@ test('SVG graph inherits the portfolio palette and renders every route edge as d
     const lineColor = tokens.getPropertyValue('--line').trim();
     const weight = svg.querySelector('.cvrp-graph-weight');
     const weightLabel = svg.querySelector('.cvrp-graph-weight-label');
-    const routes = [...svg.querySelectorAll('line.cvrp-graph-edge')];
+    const routes = [...svg.querySelectorAll('path.cvrp-graph-edge')];
     const diamonds = [...svg.querySelectorAll('polygon.cvrp-graph-weight')];
     return {
       darkPanel,
@@ -501,6 +501,17 @@ test('SVG graph inherits the portfolio palette and renders every route edge as d
   expect(visual.diamondCount).toBe(visual.count);
   expect(visual.dashPatterns.every(pattern => pattern === '10 8')).toBe(true);
   expect(visual.arrowMarkers.every(marker => marker?.startsWith('url(#cvrp-arrow-'))).toBe(true);
+  // Border widths and route stroke thickness stay readable at small node sizes.
+  expect(await page.locator(graph + ' circle.cvrp-graph-node').first()
+    .evaluate(el => getComputedStyle(el).strokeWidth)).toBe('1px');
+  expect(await page.locator(graph + ' polygon.cvrp-graph-weight').first()
+    .evaluate(el => getComputedStyle(el).strokeWidth)).toBe('1px');
+  expect(await page.locator(graph + ' path.cvrp-graph-edge').first()
+    .evaluate(el => getComputedStyle(el).strokeWidth)).toBe('2px');
+  expect(await page.locator(graph + ' circle.cvrp-graph-node:not(.cvrp-graph-depot)').first()
+    .getAttribute('r')).toBe('20');
+  expect(await page.locator(graph + ' circle.cvrp-graph-depot').first()
+    .getAttribute('r')).toBe('24');
   expect(visual.diamondFill).toBe('rgb(16, 21, 29)');
   expect(visual.diamondStroke).toBe('rgb(67, 89, 117)');
   expect(visual.weightLabelBold).toBe('400');
@@ -516,7 +527,7 @@ test('SVG graph inherits the portfolio palette and renders every route edge as d
   expect(editedFill).toBe(before.buttonBackground);
   await page.locator(resolve).click();
   await finished(page);
-  const after = await page.locator(graph + ' line.cvrp-graph-edge').evaluateAll(
+  const after = await page.locator(graph + ' path.cvrp-graph-edge').evaluateAll(
     elements => elements.map(el => el.getAttribute('stroke-dasharray'))
   );
   expect(after.length).toBeGreaterThan(0);

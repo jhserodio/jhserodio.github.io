@@ -1,5 +1,6 @@
 import { CVRP_LIMITS, defaultInstance, sampleInstance, sampleFeasibilityBarrier } from './cvrp-sample.mjs';
 import { createCvrpSession } from './cvrp-session.mjs';
+import { buildCvrpGraphLayout, DEPOT_RADIUS, NODE_RADIUS } from './cvrp-graph-layout.mjs';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 // Route colors follow the portfolio's existing CSS theme tokens.
@@ -25,14 +26,11 @@ function drawGraph(svg, instance, routes = []) {
   const n = instance.demands.length;
   if (n < 1 || n > 12) return;
 
-  const positions = [{ x: 450, y: 283 }];
-  for (let i = 0; i < n; i++) {
-    const angle = -Math.PI / 2 + i * (2 * Math.PI / n);
-    positions.push({
-      x: 450 + 333 * Math.cos(angle),
-      y: 282 + 203 * Math.sin(angle),
-    });
-  }
+  // Geometry is deterministic and kept apart from the solver and DOM.
+  // Curve candidates steer around other paths and SVG nodes; labels reserve
+  // space so a route cannot cover another route's cost or a demand value.
+  const { positions, edges, demandLabels } =
+    buildCvrpGraphLayout(instance.demands, routes, instance.distances);
 
   const defs = svgNode('defs');
   for (let i = 0; i < COLORS.length; i++) {
@@ -45,67 +43,54 @@ function drawGraph(svg, instance, routes = []) {
   }
   svg.append(defs);
 
-  for (let idx = 0; idx < routes.length; idx++) {
-    const color = COLORS[idx % COLORS.length];
-    const stops = routes[idx].stops;
-    for (let j = 0; j + 1 < stops.length; j++) {
-      const fromIndex = stops[j], toIndex = stops[j + 1];
-      const from = positions[fromIndex], to = positions[toIndex];
-      if (!from || !to || fromIndex === toIndex) continue;
+  for (const edge of edges) {
+    const color = COLORS[edge.routeIndex % COLORS.length];
+    svg.append(svgNode('path', {
+      class: 'cvrp-graph-edge',
+      d: edge.path, fill: 'none', stroke: color,
+      'stroke-width': 2, 'stroke-dasharray': '10 8',
+      'stroke-linecap': 'round',
+      'marker-end': 'url(#cvrp-arrow-' + (edge.routeIndex % COLORS.length) + ')',
+    }));
 
-      const dx = to.x - from.x, dy = to.y - from.y;
-      const size = Math.hypot(dx, dy);
-      if (size === 0) continue;
-      const ux = dx / size, uy = dy / size;
-      const aRadius = fromIndex === 0 ? 34 : 29;
-      const bRadius = toIndex === 0 ? 34 : 29;
-      const x1 = from.x + ux * aRadius, y1 = from.y + uy * aRadius;
-      const x2 = to.x - ux * (bRadius + 7), y2 = to.y - uy * (bRadius + 7);
-      svg.append(svgNode('line', {
-        class: 'cvrp-graph-edge',
-        x1, y1, x2, y2, stroke: color, 'stroke-width': 3,
-        'stroke-dasharray': '10 8',
-        'stroke-linecap': 'round', 'marker-end': 'url(#cvrp-arrow-' + (idx % COLORS.length) + ')',
-      }));
-
-      // The weight diamond sits directly on its corresponding edge.
-      const cx = (x1 + x2) / 2, cy = (y1 + y2) / 2;
-      const diamond = svgNode('polygon', {
-        class: 'cvrp-graph-weight',
-        points: [
-          [cx, cy - 16], [cx + 22, cy], [cx, cy + 16], [cx - 22, cy],
-        ].map(pair => pair.map(x => x.toFixed(1)).join(',')).join(' '),
-      });
-      svg.append(diamond);
-      const cost = instance.distances?.[fromIndex]?.[toIndex];
-      svg.append(svgNode('text', {
-        class: 'cvrp-graph-weight-label',
-        x: cx, y: cy + 5, 'font-size': 17, 'text-anchor': 'middle',
-        'font-weight': 400,
-      }, cost === undefined ? '?' : cost));
-    }
+    // Compact diamond, placed on the curve away from other weights/edges.
+    const { x, y, halfWidth, halfHeight } = edge.weight;
+    svg.append(svgNode('polygon', {
+      class: 'cvrp-graph-weight',
+      points: [
+        [x, y - halfHeight], [x + halfWidth, y],
+        [x, y + halfHeight], [x - halfWidth, y],
+      ].map(pair => pair.map(value => value.toFixed(1)).join(',')).join(' '),
+    }));
+    svg.append(svgNode('text', {
+      class: 'cvrp-graph-weight-label',
+      x, y: y + 4, 'font-size': 13, 'text-anchor': 'middle',
+      'font-weight': 400,
+    }, edge.cost));
   }
 
-  // Draw nodes last so no directed edge can obscure a customer label.
+  // Render circles after curves so route segments stay behind the nodes.
   for (let i = 0; i <= n; i++) {
     const p = positions[i], depot = i === 0;
-    const g = svgNode('g');
-    g.append(svgNode('circle', {
+    const group = svgNode('g');
+    group.append(svgNode('circle', {
       class: depot ? 'cvrp-graph-node cvrp-graph-depot' : 'cvrp-graph-node',
-      cx: p.x, cy: p.y, r: depot ? 34 : 29,
+      cx: p.x, cy: p.y, r: depot ? DEPOT_RADIUS : NODE_RADIUS,
     }));
-    g.append(svgNode('text', {
+    group.append(svgNode('text', {
       class: depot ? 'cvrp-graph-node-label cvrp-graph-depot-label' : 'cvrp-graph-node-label',
-      x: p.x, y: p.y + 8, 'text-anchor': 'middle',
-      'font-size': 26, 'font-weight': 400,
+      x: p.x, y: p.y + 6, 'text-anchor': 'middle',
+      'font-size': 19, 'font-weight': 400,
     }, customerName(i)));
-    if (i !== 0) {
-      g.append(svgNode('text', {
+    if (!depot) {
+      const demand = demandLabels[i];
+      group.append(svgNode('text', {
         class: 'cvrp-graph-demand',
-        x: p.x, y: p.y + 49, 'text-anchor': 'middle', 'font-size': 15,
+        x: demand.x, y: demand.y + 4,
+        'text-anchor': 'middle', 'font-size': 13,
       }, 'd=' + instance.demands[i - 1]));
     }
-    svg.append(g);
+    svg.append(group);
   }
 }
 

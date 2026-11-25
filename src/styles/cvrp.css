@@ -23,14 +23,14 @@
 .cvrp-graph-wrap svg { display:block; width:100%; min-width:450px; height:auto; }
 /* Theme-aware SVG styling. Nodes mirror the Resolve button rather than
    using light badges; darker weights remain separate from customer nodes. */
-.cvrp-graph-node { fill:var(--cvrp-control-bg); stroke:var(--accent-soft); stroke-width:3; }
+.cvrp-graph-node { fill:var(--cvrp-control-bg); stroke:var(--accent-soft); stroke-width:1; }
 .cvrp-graph-depot { stroke:var(--accent); }
 .cvrp-graph-node-label { fill:var(--text); font-weight:400; }
 .cvrp-graph-depot-label { fill:var(--accent); }
 .cvrp-graph-demand { fill:var(--muted); }
-.cvrp-graph-weight { fill:var(--panel); stroke:var(--line); stroke-width:1.7; }
+.cvrp-graph-weight { fill:var(--panel); stroke:var(--line); stroke-width:1; }
 .cvrp-graph-weight-label { fill:var(--text); font-weight:400; }
-.cvrp-graph-edge { stroke-dasharray:10 8; }
+.cvrp-graph-edge { stroke-dasharray:10 8; stroke-width:2; fill:none; }
 .cvrp-route-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr)); gap:.65rem; }
 .cvrp-route { min-width:0; padding:.75rem; border:1px solid var(--line-soft); border-left:3px solid var(--route-color,var(--accent)); border-radius:.5rem; background:rgba(67,89,117,.1); }
 .cvrp-route p { margin:.25rem 0; }
