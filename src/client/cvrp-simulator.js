@@ -1,4 +1,4 @@
-import { defaultInstance, sampleInstance } from './cvrp-sample.mjs';
+import { CVRP_LIMITS, defaultInstance, sampleInstance } from './cvrp-sample.mjs';
 import { createCvrpSession } from './cvrp-session.mjs';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -102,19 +102,33 @@ function drawGraph(svg, instance, routes = []) {
 }
 
 function validateInstance(input) {
-  if (!input || !Array.isArray(input.demands) || input.demands.length < 1 || input.demands.length > 12) {
-    throw new Error('The browser demo supports 1–12 customers.');
+  const limits = CVRP_LIMITS;
+  const inRange = (value, range) =>
+    Number.isSafeInteger(value) && value >= range.min && value <= range.max;
+  if (!input || !Array.isArray(input.demands) ||
+      input.demands.length < limits.customers.min ||
+      input.demands.length > limits.customers.max) {
+    throw new Error('Customers must be between 2 and 12 in the browser demo.');
   }
   const n = input.demands.length;
-  const isPositive = x => Number.isSafeInteger(x) && x > 0;
-  if (!input.demands.every(isPositive)) throw new Error('Demands must be positive integers.');
-  if (!isPositive(input.vehicle_capacity) || !isPositive(input.max_route_distance)
-    || !isPositive(input.max_vehicles)) throw new Error('Q, K and L must be positive integers.');
-  if (!Array.isArray(input.distances) || input.distances.length !== n + 1
-    || !input.distances.every((row, i) =>
-      Array.isArray(row) && row.length === n + 1 &&
-      row.every((v, j) => Number.isSafeInteger(v) && v >= 0 && (i !== j || v === 0)))) {
-    throw new Error('Expected a square non-negative integer matrix with zero diagonal.');
+  if (!input.demands.every(d => inRange(d, limits.demand))) {
+    throw new Error('Demands must be integers between 1 and 100000.');
+  }
+  if (!inRange(input.vehicle_capacity, limits.vehicle_capacity)) {
+    throw new Error('Vehicle capacity (Q) must be between 1 and 100000.');
+  }
+  if (!inRange(input.max_vehicles, { min: 1, max: n })) {
+    throw new Error('Vehicle count (K) must be between 1 and the number of customers.');
+  }
+  if (!inRange(input.max_route_distance, limits.max_route_distance)) {
+    throw new Error('Maximum route distance (L) must be between 1 and 100000.');
+  }
+  if (!Array.isArray(input.distances) || input.distances.length !== n + 1 ||
+      !input.distances.every((row, i) =>
+        Array.isArray(row) && row.length === n + 1 &&
+        row.every((v, j) => inRange(v, limits.arc_distance) &&
+          (i !== j || v === 0)))) {
+    throw new Error('Distance matrix must have n+1 rows and columns, costs 0–100000, and zero diagonal.');
   }
 }
 
@@ -145,6 +159,19 @@ document.querySelectorAll('[data-cvrp-root]').forEach((root) => {
   document.body.append(overlay);
   const controls = ['n', 'q', 'k', 'l', 'seed'].map(getInput);
   const locked = [...controls, textarea, runButton];
+  // Keep DOM attributes and JavaScript validation aligned.
+  for (const [name, range] of [
+    ['n', CVRP_LIMITS.customers],
+    ['q', CVRP_LIMITS.vehicle_capacity],
+    ['k', CVRP_LIMITS.max_vehicles],
+    ['l', CVRP_LIMITS.max_route_distance],
+    ['seed', CVRP_LIMITS.seed],
+  ]) {
+    const field = getInput(name);
+    field.min = String(range.min);
+    field.max = String(range.max);
+    field.step = '1';
+  }
   let lastValidInstance = null;
   let parametersValid = false;
 
@@ -170,6 +197,14 @@ document.querySelectorAll('[data-cvrp-root]').forEach((root) => {
   function sampleFromControls() {
     const [n, q, k, l, seed] = controls.map(input =>
       input.value.trim() === '' ? NaN : Number(input.value));
+    const maxK = Number.isSafeInteger(n) && n >= CVRP_LIMITS.customers.min &&
+      n <= CVRP_LIMITS.customers.max ? n : CVRP_LIMITS.max_vehicles.max;
+    getInput('k').max = String(maxK);
+    // Reducing the customer count also reduces the maximum useful fleet size.
+    if (Number.isSafeInteger(k) && k > maxK) {
+      getInput('k').value = String(maxK);
+      return sampleInstance({ n, q, k: maxK, l, seed });
+    }
     const standard = n === 6 && q === 7 && k === 3 && l === 18 && seed === 7;
     return standard ? defaultInstance() : sampleInstance({ n, q, k, l, seed });
   }

@@ -1,3 +1,15 @@
+// Browser resource limits. Rust itself supports up to 20 customers, but this
+// interactive exponential-time demo is deliberately capped at 12.
+export const CVRP_LIMITS = Object.freeze({
+  customers: { min: 2, max: 12 },
+  vehicle_capacity: { min: 1, max: 100000 },
+  max_vehicles: { min: 1, max: 12 },
+  max_route_distance: { min: 1, max: 100000 },
+  seed: { min: 0, max: 2147483647 },
+  demand: { min: 1, max: 100000 },
+  arc_distance: { min: 0, max: 100000 },
+});
+
 // Pure synthetic instances and the documented six-customer CVRP fixture.
 export const DEFAULT_INSTANCE = {
   demands: [2, 4, 3, 4, 2, 3],
@@ -30,11 +42,11 @@ function integer(value, lower, upper, name) {
 
 // Reproducible integer generator. Distances are synthetic, not road distances.
 export function sampleInstance({ n, q, k, l, seed }) {
-  integer(n, 2, 12, 'n');
-  integer(q, 1, 100000, 'Q');
-  integer(k, 1, 12, 'K');
-  integer(l, 1, 100000, 'L');
-  integer(seed, 0, 2147483647, 'seed');
+  integer(n, CVRP_LIMITS.customers.min, CVRP_LIMITS.customers.max, 'n');
+  integer(q, CVRP_LIMITS.vehicle_capacity.min, CVRP_LIMITS.vehicle_capacity.max, 'Q');
+  integer(k, CVRP_LIMITS.max_vehicles.min, Math.min(CVRP_LIMITS.max_vehicles.max, n), 'K');
+  integer(l, CVRP_LIMITS.max_route_distance.min, CVRP_LIMITS.max_route_distance.max, 'L');
+  integer(seed, CVRP_LIMITS.seed.min, CVRP_LIMITS.seed.max, 'seed');
 
   let state = seed >>> 0;
   const next = () => {
