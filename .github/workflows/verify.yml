@@ -20,6 +20,10 @@ jobs:
           cache: npm
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: jetli/wasm-pack-action@v0.4.0
       - name: Unit tests
         run: npm test
       - name: Typecheck and Astro diagnostics
@@ -39,3 +43,8 @@ jobs:
             dist/pt/rss.xml dist/en/rss.xml; do
             test -f "$route" || { echo "Missing static route: $route"; exit 1; }
           done
+
+      - name: Verify WASM files
+        run: |
+          test -s dist/wasm/cvrp-solver/cvrp_solver_wasm_bg.wasm
+          test -s dist/wasm/cvrp-solver/cvrp_solver_wasm.js

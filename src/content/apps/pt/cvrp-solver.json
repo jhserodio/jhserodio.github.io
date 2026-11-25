@@ -1,14 +1,15 @@
 {
-  "title": "CVRP Solver (WASM)",
-  "description": "Futura demonstração interativa de otimização de rotas em Rust.",
+  "title": "CVRP Solver (Rust/WASM)",
+  "description": "Simulador interativo e determinístico de roteamento com capacidade e limite de distância. Execute o solver exato em Rust no navegador.",
   "lang": "pt",
   "type": "wasm-interactive",
-  "status": "planned",
+  "status": "active",
   "wasmModule": "cvrp-solver",
   "pricing": "free",
   "tags": [
     "Rust",
-    "WASM",
-    "optimization"
+    "WebAssembly",
+    "Programação Dinâmica",
+    "Grafos"
   ]
 }

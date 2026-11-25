@@ -56,7 +56,27 @@ OBSIDIAN_VAULT_DIR=/path/to/vault npm run sync:vault
 
 Only notes with `publish: true` are considered; the pipeline generates `src/content/articles/{pt,en}/vault/` and `public/vault-assets/`. Check the generated public output before deploying. Some Obsidian syntax is intentionally unsupported.
 
-The CVRP WASM app is **planned**, not executable. The Rust crate does not exist yet. `npm run build:wasm` safely skips it until a real implementation is added. External Apps link directly to their public repositories.
+The CVRP WASM app is implemented as `crates/cvrp-solver-wasm`, using the
+exact solver from `jhserodio/logistic_problem_with_max_capacity` as a pinned
+Rust Git dependency. The browser loads the generated module in a Web Worker,
+so solving does not block the page. The Astro build compiles it with wasm-pack
+before generating static assets.
+
+Requirements for local builds: Rust stable, `wasm32-unknown-unknown` target,
+`wasm-pack`, Node.js 22+, and npm. GitHub Actions installs the Rust target
+and wasm-pack, executes tests and checks, validates the WASM artifact, and
+deploys the app with the rest of the portfolio.
+
+- English app: `https://serodio.dev/en/apps/cvrp-solver/`
+- Portuguese app: `https://serodio.dev/pt/apps/cvrp-solver/`
+- The CVRP app's **Back to Apps** link always points to
+  `https://serodio.dev/en/apps/`, including from the Portuguese page.
+
+The simulator ships with an editable deterministic six-client example. Other
+seeded examples are synthetic; distances do not represent roads. The complete
+JSON matrix can be edited before each run. Browser demos cap the number of
+customers at 12 to manage the exponential cost; the original CLI supports up
+to 20. External Apps still link to their public repositories.
 
 ## Language selection and compatibility
 

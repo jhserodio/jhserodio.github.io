@@ -1,14 +1,15 @@
 {
-  "title": "CVRP Solver (WASM)",
-  "description": "Planned interactive route-optimization demo with Rust.",
+  "title": "CVRP Solver (Rust/WASM)",
+  "description": "Interactive deterministic route optimization with capacity and route-length constraints, computed by an exact Rust solver in your browser.",
   "lang": "en",
   "type": "wasm-interactive",
-  "status": "planned",
+  "status": "active",
   "wasmModule": "cvrp-solver",
   "pricing": "free",
   "tags": [
     "Rust",
-    "WASM",
-    "optimization"
+    "WebAssembly",
+    "Dynamic Programming",
+    "Graphs"
   ]
 }
