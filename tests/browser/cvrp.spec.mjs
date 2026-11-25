@@ -177,7 +177,8 @@ test('manual JSON changes clear solved edges, accept new values and handle inval
   await unsolved(page, 7);
   await expect(page.locator(resolve)).toBeEnabled();
   await page.locator(resolve).click();
-  await expect(page.locator(status)).toContainText('Não existe solução viável');
+  await expect(page.locator(status)).toContainText('Instância inviável');
+  await expect(page.locator('.cvrp-infeasible')).toBeVisible();
   await finished(page);
 
   await field.fill('{ invalid JSON }');
