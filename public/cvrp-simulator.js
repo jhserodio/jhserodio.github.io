@@ -127,38 +127,33 @@ function appendText(parent, tag, content, className) {
 }
 
 document.querySelectorAll('[data-cvrp-root]').forEach((root) => {
-  const lang = root.dataset.lang === 'pt' ? 'pt' : 'en';
-  const pt = lang === 'pt';
+  const pt = root.dataset.lang === 'pt';
   const form = root.querySelector('[data-cvrp-form]');
   const textarea = root.querySelector('[data-cvrp-json]');
   const svg = root.querySelector('[data-cvrp-graph]');
   const status = root.querySelector('[data-cvrp-status]');
   const results = root.querySelector('[data-cvrp-results]');
   const runButton = root.querySelector('[data-cvrp-run]');
-  const regenerateButton = root.querySelector('[data-cvrp-generate]');
   const overlay = root.querySelector('[data-cvrp-overlay]');
   const cancelButton = overlay?.querySelector('[data-cvrp-cancel]');
-  const pendingNotice = root.querySelector('[data-cvrp-pending]');
-  const getInput = key => root.querySelector('[data-cvrp-' + key + ']');
+  const getInput = name => root.querySelector('[data-cvrp-' + name + ']');
 
   if (!form || !textarea || !svg || !status || !results ||
-    !runButton || !regenerateButton || !overlay || !cancelButton || !pendingNotice) return;
+      !runButton || !overlay || !cancelButton) return;
 
-  // Move the modal to <body> so its fixed positioning is never clipped
-  // by the translucent, backdrop-filtered portfolio shell.
+  // Keep the loading dialog above the backdrop-filtered portfolio layout.
   document.body.append(overlay);
   const controls = ['n', 'q', 'k', 'l', 'seed'].map(getInput);
-  const lockedControls = [...controls, textarea, runButton, regenerateButton];
-  let parametersPending = false;
-  let lastInstance = null;
+  const locked = [...controls, textarea, runButton];
+  let lastValidInstance = null;
+  let parametersValid = false;
 
   function setLocked(busy) {
-    overlay.hidden = !busy;
     root.setAttribute('aria-busy', String(busy));
+    overlay.hidden = !busy;
     document.body.classList.toggle('cvrp-solving', busy);
-    lockedControls.forEach(input => { input.disabled = busy; });
-    // Parameter edits are staged: Generate is required before Solve.
-    runButton.disabled = busy || parametersPending;
+    locked.forEach(input => { input.disabled = busy; });
+    runButton.disabled = busy || !parametersValid;
     cancelButton.disabled = !busy;
   }
 
@@ -167,10 +162,16 @@ document.querySelectorAll('[data-cvrp-root]').forEach((root) => {
     status.classList.toggle('cvrp-status-error', isError);
   }
 
-  function clearSolution(instance = null) {
+  function showUnsolved(instance = lastValidInstance) {
     results.replaceChildren();
-    if (instance) drawGraph(svg, instance);
-    else svg.replaceChildren();
+    drawGraph(svg, instance);
+  }
+
+  function sampleFromControls() {
+    const [n, q, k, l, seed] = controls.map(input =>
+      input.value.trim() === '' ? NaN : Number(input.value));
+    const standard = n === 6 && q === 7 && k === 3 && l === 18 && seed === 7;
+    return standard ? defaultInstance() : sampleInstance({ n, q, k, l, seed });
   }
 
   const session = createCvrpSession({
@@ -215,98 +216,91 @@ document.querySelectorAll('[data-cvrp-root]').forEach((root) => {
     },
   });
 
-  function createSample() {
-    const [n, q, k, l, seed] = controls.map(input => Number(input.value));
-    const standard = n === 6 && q === 7 && k === 3 && l === 18 && seed === 7;
-    return standard ? defaultInstance() : sampleInstance({ n, q, k, l, seed });
+  // Parameter edits immediately refresh the JSON and unsolved graph.
+  // No Worker is created until the user explicitly clicks Resolve.
+  function changeParameters() {
+    if (session.getSnapshot().busy) return;
+    session.invalidate();
+    showUnsolved();
+    try {
+      const instance = sampleFromControls();
+      validateInstance(instance);
+      lastValidInstance = instance;
+      textarea.value = JSON.stringify(instance, null, 2);
+      parametersValid = true;
+      showUnsolved(instance);
+      statusMessage(pt
+        ? 'Parâmetros atualizados. Clique em Resolver para calcular as rotas.'
+        : 'Parameters updated. Click Resolve to compute the routes.');
+    } catch (error) {
+      // An intermediate invalid value (e.g. while typing) is never submitted.
+      parametersValid = false;
+      textarea.value = '';
+      statusMessage((pt ? 'Parâmetros inválidos: ' : 'Invalid parameters: ') +
+        String(error), true);
+    }
+    runButton.disabled = !parametersValid;
   }
 
-  function markParametersPending() {
-    // Never modify an existing answer or its JSON just because a field changed.
+  function changeJSON() {
     if (session.getSnapshot().busy) return;
-    parametersPending = true;
-    pendingNotice.hidden = false;
-    pendingNotice.textContent = pt
-      ? 'Parâmetros alterados. Clique em Gerar para preparar a nova instância; depois, em Resolver.'
-      : 'Parameters changed. Click Generate to prepare the new instance, then Solve.';
-    runButton.disabled = true;
+    session.invalidate();
+    showUnsolved();
+    try {
+      const instance = JSON.parse(textarea.value);
+      validateInstance(instance);
+      lastValidInstance = instance;
+      parametersValid = true;
+      showUnsolved(instance);
+      statusMessage(pt
+        ? 'JSON atualizado. Clique em Resolver para calcular as rotas.'
+        : 'JSON updated. Click Resolve to compute the routes.');
+    } catch (error) {
+      parametersValid = false;
+      statusMessage((pt ? 'JSON inválido: ' : 'Invalid JSON: ') + String(error), true);
+    }
+    runButton.disabled = !parametersValid;
   }
 
   function solveCurrent() {
-    if (parametersPending || session.getSnapshot().busy) return;
+    if (session.getSnapshot().busy) return;
     try {
-      // Only the current JSON is submitted, never ungenerated input fields.
-      const input = JSON.parse(textarea.value);
-      validateInstance(input);
-      lastInstance = input;
-      clearSolution(input);
-      pendingNotice.hidden = true;
+      // Parse again to guarantee that the solver receives current values.
+      const instance = JSON.parse(textarea.value);
+      validateInstance(instance);
+      parametersValid = true;
+      lastValidInstance = instance;
+      showUnsolved(instance);
       statusMessage(pt ? 'Executando solver Rust/WASM…' : 'Running Rust/WASM solver…');
-      session.start(input);
+      session.start(instance);
     } catch (error) {
       session.invalidate();
-      clearSolution();
+      parametersValid = false;
+      runButton.disabled = true;
+      showUnsolved();
       statusMessage((pt ? 'Entrada inválida: ' : 'Invalid input: ') + String(error), true);
     }
   }
 
-  function regenerate() {
-    // Generate is the explicit commit point for edited form parameters.
-    // It invalidates any previous computation and removes its old solution,
-    // but NEVER runs the solver. Only Solve starts a worker.
-    session.invalidate();
-    clearSolution();
-    try {
-      const instance = createSample();
-      lastInstance = instance;
-      textarea.value = JSON.stringify(instance, null, 2);
-      clearSolution(instance);
-      parametersPending = false;
-      pendingNotice.hidden = true;
-      runButton.disabled = false;
-      statusMessage(pt
-        ? 'Instância gerada. Clique em Resolver para calcular as rotas.'
-        : 'Instance generated. Click Solve to compute the routes.');
-    } catch (error) {
-      lastInstance = null;
-      textarea.value = '';
-      parametersPending = true;
-      pendingNotice.hidden = true;
-      runButton.disabled = true;
-      statusMessage((pt ? 'Parâmetros inválidos: ' : 'Invalid parameters: ') +
-        String(error), true);
-    }
-  }
-
   for (const input of controls) {
-    input.addEventListener('input', markParametersPending);
-    input.addEventListener('change', markParametersPending);
+    input.addEventListener('input', changeParameters);
+    input.addEventListener('change', changeParameters);
   }
+  textarea.addEventListener('input', changeJSON);
 
-  regenerateButton.addEventListener('click', regenerate);
-
-  // Manual JSON edits also leave the visible result intact until Solve.
-  // They do not apply staged changes to the form controls.
-  textarea.addEventListener('input', () => {
-    if (session.getSnapshot().busy || parametersPending) return;
-    pendingNotice.hidden = false;
-    pendingNotice.textContent = pt
-      ? 'JSON editado. Clique em Resolver para calcular essa instância.'
-      : 'JSON edited. Click Solve to compute this instance.';
+  // An explicit button avoids native form constraint-validation blocking
+  // the click handler while numbers are being edited.
+  runButton.addEventListener('click', solveCurrent);
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    solveCurrent();
   });
 
   cancelButton.addEventListener('click', () => {
     if (!session.cancel()) return;
-    clearSolution(lastInstance);
+    showUnsolved();
     statusMessage(pt ? 'Execução cancelada.' : 'Computation cancelled.');
   });
 
-  form.addEventListener('submit', event => {
-    event.preventDefault();
-    // Ignore any synthetic duplicate submit while the loading overlay is active.
-    if (session.getSnapshot().busy || parametersPending) return;
-    solveCurrent();
-  });
-
-  regenerate();
+  changeParameters();
 });
