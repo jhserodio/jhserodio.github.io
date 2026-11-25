@@ -31,9 +31,13 @@ async function finished(page) {
   await expect(page.locator(root)).toHaveAttribute('aria-busy', 'false');
   await expect(page.locator(overlay)).toBeHidden();
   await expect(page.locator(resolve)).toBeEnabled();
-  await expect(page.locator(status)).toContainText(
-    /Optimal solution|No feasible solution|Solução ótima|Não existe solução viável/,
-  );
+  await expect(page.locator(status)).toContainText(/Optimal solution|Solução ótima/);
+  // A "completed but infeasible" Worker is NOT success for a sample that
+  // was deliberately generated with a feasible witness.
+  await expect(page.locator('.cvrp-route').first()).toBeVisible();
+  const edgeCount = await page.locator(graph + ' line').count();
+  expect(edgeCount).toBeGreaterThan(0);
+  await expect(page.locator(graph + ' polygon')).toHaveCount(edgeCount);
 }
 
 // Deterministic Worker for UI/lifecycle tests. Actual WASM is tested separately.
@@ -371,4 +375,71 @@ test('JSON manual inputs cannot bypass the browser range limits', async ({ page 
     await field.fill(JSON.stringify(valid));
     await expect(page.locator(resolve)).toBeEnabled();
   }
+});
+
+
+test('REGRESSION: actual WASM must redraw edges after editing and resolving new feasible graphs', async ({ page }) => {
+  await page.goto(route('en'));
+  await page.locator(resolve).click();
+  await expect(page.locator(results)).toContainText('44');
+  await finished(page);
+  for (const [name, value] of [
+    ['n', 7], ['n', 8], ['n', 10], ['n', 12],
+    ['seed', 42], ['q', 8], ['k', 4], ['l', 12],
+    ['n', 6], ['seed', 7], ['l', 18],
+  ]) {
+    await changeNumber(page, name, value);
+    const newInstance = JSON.parse(await page.locator(json).inputValue());
+    await unsolved(page, newInstance.demands.length + 1);
+    await page.locator(resolve).click();
+    await finished(page);
+    const edges = await page.locator(graph + ' line').count();
+    const polylines = await page.locator(graph + ' polygon').count();
+    const cards = await page.locator('.cvrp-route').count();
+    expect(edges).toBeGreaterThanOrEqual(cards * 2);
+    expect(polylines).toBe(edges);
+    await expect(page.locator(graph + ' circle')).toHaveCount(newInstance.demands.length + 1);
+    const resultNumbers = await page.locator('.cvrp-route').allTextContents();
+    expect(resultNumbers.length).toBeGreaterThan(0);
+    expect(resultNumbers.every(card => card.includes('Route '))).toBe(true);
+  }
+});
+
+test('REGRESSION: knowingly impossible synthetic instances display visible infeasibility, not silent blank output', async ({ page }) => {
+  await page.goto(route('en'));
+  await page.locator(resolve).click();
+  await finished(page);
+  await changeNumber(page, 'n', 12);
+  await changeNumber(page, 'q', 1);
+  await changeNumber(page, 'k', 2);
+  await unsolved(page, 13);
+  await page.locator(resolve).click();
+  await expect(page.locator(status)).toContainText('Infeasible instance');
+  await expect(page.locator('.cvrp-infeasible')).toContainText('Increase Q or K');
+  await expect(page.locator(graph + ' line')).toHaveCount(0);
+  await expect(page.locator(graph + ' polygon')).toHaveCount(0);
+  await expect(page.locator(overlay)).toBeHidden();
+  await changeNumber(page, 'k', 12);
+  await expect(page.locator('.cvrp-infeasible')).toHaveCount(0);
+  await unsolved(page, 13);
+  await page.locator(resolve).click();
+  await finished(page);
+});
+
+test('REGRESSION: after invalid JSON or cancellation, corrected inputs still produce edges with real WASM', async ({ page }) => {
+  await page.goto(route('pt'));
+  await page.locator(resolve).click();
+  await finished(page);
+  await page.locator(json).fill('{ bad }');
+  await expect(page.locator(resolve)).toBeDisabled();
+  await expect(page.locator(graph + ' line')).toHaveCount(0);
+  await changeNumber(page, 'seed', 123);
+  await expect(page.locator(resolve)).toBeEnabled();
+  await unsolved(page, 7);
+  await page.locator(resolve).click();
+  await finished(page);
+  await changeNumber(page, 'n', 8);
+  await unsolved(page, 9);
+  await page.locator(resolve).click();
+  await finished(page);
 });

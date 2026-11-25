@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_INSTANCE, defaultInstance, sampleInstance } from '../src/client/cvrp-sample.mjs';
+import { DEFAULT_INSTANCE, defaultInstance, sampleInstance, sampleFeasibilityBarrier } from '../src/client/cvrp-sample.mjs';
 
 test('default fixture includes all six clients and complete directed matrix', () => {
   const i = defaultInstance();
@@ -61,4 +61,71 @@ test('browser input boundaries reject values the demo cannot safely process', ()
   assert.throws(() => sampleInstance({ ...base, l: 100001 }), /between/);
   assert.throws(() => sampleInstance({ ...base, seed: 2147483648 }), /between/);
   assert.throws(() => sampleInstance({ ...base, seed: -1 }), /between/);
+});
+
+
+test('regression: synthetic samples have a feasible route partition whenever limits allow it', () => {
+  let feasibleCases = 0;
+  let impossibleCases = 0;
+  // Combinatorial coverage of demand, fleet, distance, seed and customer count.
+  // The witness is checked independently of the Rust solver and generator internals.
+  for (let n = 2; n <= 12; n++) {
+    for (let k = 1; k <= Math.min(n, 5); k++) {
+      for (const q of [1, 2, 3, 4, 7, 12]) {
+        for (const l of [1, 2, 3, 5, 9, 18, 45]) {
+          for (const seed of [0, 7, 42]) {
+            const args = { n, q, k, l, seed };
+            const input = sampleInstance(args);
+            const barrier = sampleFeasibilityBarrier(args);
+            assert.equal(input.demands.length, n);
+            assert.equal(input.distances.length, n + 1);
+            assert.ok(input.distances.every((row, i) =>
+              row.length === n + 1 && row[i] === 0 &&
+              row.every((cost, j) => i === j || (Number.isInteger(cost) && cost >= 1))));
+            if (barrier !== null) {
+              impossibleCases++;
+              assert.ok(l < 2 || k * Math.min(q, l - 1) < n);
+              continue;
+            }
+            feasibleCases++;
+            let covered = 0;
+            // Independently reconstruct the round-robin witness that the
+            // instance generator promises, and check every exact constraint.
+            for (let route = 0; route < k; route++) {
+              const customers = Array.from({ length: n }, (_, i) => i + 1)
+                .filter(customer => (customer - 1) % k === route);
+              const load = customers.reduce((sum, c) => sum + input.demands[c - 1], 0);
+              const stops = [0, ...customers, 0];
+              const length = stops.slice(1)
+                .reduce((sum, dest, j) => sum + input.distances[stops[j]][dest], 0);
+              assert.ok(load <= q,
+                'Capacity violation: ' + JSON.stringify({ args, route, load }));
+              assert.ok(length <= l,
+                'Route-length violation: ' + JSON.stringify({ args, route, length }));
+              covered += customers.length;
+            }
+            assert.equal(covered, n);
+          }
+        }
+      }
+    }
+  }
+  assert.ok(feasibleCases > 1000);
+  assert.ok(impossibleCases > 1000);
+});
+
+test('regression: seed 7, Q=7, K=3 and L=18 stays feasible for 7–12 clients', () => {
+  for (let n = 7; n <= 12; n++) {
+    const args = { n, q: 7, k: 3, l: 18, seed: 7 };
+    const input = sampleInstance(args);
+    assert.equal(sampleFeasibilityBarrier(args), null);
+    const total = input.demands.reduce((sum, d) => sum + d, 0);
+    assert.ok(total <= 21, JSON.stringify({ n, total, demands: input.demands }));
+  }
+});
+
+test('an impossible synthetic parameter combination is reported rather than silently fabricated', () => {
+  assert.equal(sampleFeasibilityBarrier({ n: 10, q: 2, k: 3, l: 18 }), 'capacity');
+  assert.equal(sampleFeasibilityBarrier({ n: 10, q: 10, k: 3, l: 3 }), 'route-distance');
+  assert.equal(sampleFeasibilityBarrier({ n: 3, q: 7, k: 3, l: 1 }), 'distance');
 });
